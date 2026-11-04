@@ -3,130 +3,454 @@ import SwiftUI
 
 import FuginautCore
 
-// SettingsView is the settings window's content. Every change applies to the clock right away.
+// SettingsTab names one page of the settings window.
+enum SettingsTab: String, CaseIterable, Identifiable {
+    case placement
+    case text
+    case format
+    case general
+
+    // id identifies the tab in lists.
+    var id: Self { self }
+
+    // title is the tab's label.
+    var title: String {
+        switch self {
+        case .placement: "Placement"
+        case .text: "Text"
+        case .format: "Format"
+        case .general: "General"
+        }
+    }
+
+    // symbol is the tab's SF Symbol.
+    var symbol: String {
+        switch self {
+        case .placement: "menubar.rectangle"
+        case .text: "textformat"
+        case .format: "calendar.badge.clock"
+        case .general: "gearshape"
+        }
+    }
+}
+
+// SettingsView is the settings window's content: a live preview over tabbed cards. Every change applies to the
+// clock right away.
 struct SettingsView: View {
     // store holds the live settings.
     @Bindable var store: SettingsStore
     // loginItem starts Fuginaut at login.
     var loginItem: LoginItem
+    // tab is the page on show.
+    @State var tab: SettingsTab = .placement
+    // previewDark draws the preview's menu bar dark, or follows the system when nil.
+    @State var previewDark: Bool?
+    // previewDate pins the preview's time, for stills. Nil shows the live time.
+    var previewDate: Date?
 
+    // colorScheme is the window's appearance, which the preview follows until flipped.
+    @Environment(\.colorScheme) private var colorScheme
+
+    // width is the window's content width.
+    static let width: CGFloat = 540
+    // pageHeight is the height of the card area, fixed so the window keeps its size across tabs.
+    static let pageHeight: CGFloat = 372
     // zones lists every time zone identifier for the second time picker.
     private static let zones = TimeZone.knownTimeZoneIdentifiers.sorted()
+    // families lists the installed font families for the font picker.
+    private static let families = ClockLook.families()
+    // patternHelp is the Unicode table of date pattern letters.
+    private static let patternHelp = URL(
+        string: "https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table"
+    )
 
-    // body lays out the settings form.
+    // body lays out the preview, the tab strip, and the current page.
     var body: some View {
-        Form {
-            position
-            look
-            time
-            general
+        VStack(spacing: 0) {
+            ClockPreview(settings: store.settings, dark: dark, date: previewDate)
+                .padding([.horizontal, .top], 16)
+            tabStrip
+                .padding(.vertical, 10)
+            Divider()
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    page
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+            .frame(height: Self.pageHeight)
         }
-        .formStyle(.grouped)
-        .frame(width: 440)
-        .fixedSize(horizontal: false, vertical: true)
+        .frame(width: Self.width)
+        .background(Color(nsColor: .windowBackgroundColor))
+        .toggleStyle(.switch)
+        .controlSize(.small)
     }
 
-    // position holds the anchor, offset, and display choices.
-    private var position: some View {
-        Section("Position") {
-            Picker("Place", selection: $store.settings.anchor) {
-                Text("Center").tag(Anchor.center)
-                Text("Left").tag(Anchor.left)
+    // dark binds the preview's appearance, starting from the window's.
+    private var dark: Binding<Bool> {
+        Binding {
+            previewDark ?? (colorScheme == .dark)
+        } set: { on in
+            previewDark = on
+        }
+    }
+
+    // tabStrip draws the page buttons in a centered row.
+    private var tabStrip: some View {
+        HStack(spacing: 4) {
+            ForEach(SettingsTab.allCases) { item in
+                Button {
+                    tab = item
+                } label: {
+                    VStack(spacing: 3) {
+                        Image(systemName: item.symbol)
+                            .font(.system(size: 16, weight: .regular))
+                            .frame(height: 20)
+                        Text(item.title)
+                            .font(.system(size: 11, weight: tab == item ? .semibold : .regular))
+                    }
+                    .frame(width: 82, height: 46)
+                    .foregroundStyle(tab == item ? Color.accentColor : Color.secondary)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(tab == item ? Color.primary.opacity(0.08) : .clear)
+                    )
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
-            .pickerStyle(.segmented)
-            LabeledContent("Nudge") {
-                HStack {
-                    Slider(value: $store.settings.offset, in: Settings.offsets, step: 1)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // page returns the cards for the current tab.
+    @ViewBuilder private var page: some View {
+        switch tab {
+        case .placement:
+            positionCard
+            displaysCard
+        case .text:
+            typefaceCard
+            colorCard
+        case .format:
+            dayCard
+            secondTimeCard
+        case .general:
+            behaviorCard
+            footer
+        }
+    }
+
+    // positionCard holds the anchor and the nudge.
+    private var positionCard: some View {
+        Card("Position") {
+            Row("Place", detail: "Left sits at the screen's left edge, over the app menus.") {
+                Picker("Place", selection: $store.settings.anchor) {
+                    Text("Center").tag(Anchor.center)
+                    Text("Left").tag(Anchor.left)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(width: 150)
+            }
+            RowDivider()
+            Row("Nudge") {
+                HStack(spacing: 8) {
+                    Slider(value: whole(\.offset), in: FuginautCore.Settings.offsets)
+                        .frame(width: 170)
                     Text("\(Int(store.settings.offset)) pt")
                         .monospacedDigit()
-                        .frame(width: 56, alignment: .trailing)
-                    Button("Reset") {
+                        .foregroundStyle(.secondary)
+                        .frame(width: 52, alignment: .trailing)
+                    ResetButton(disabled: store.settings.offset == 0) {
                         store.settings.offset = 0
                     }
-                    .disabled(store.settings.offset == 0)
                 }
-            }
-            ForEach(Display.all(), id: \.uuid) { display in
-                Toggle(display.name, isOn: shown(display.uuid))
             }
         }
     }
 
-    // look holds the size, weight, and color choices.
-    private var look: some View {
-        Section("Look") {
-            LabeledContent("Size") {
-                HStack {
-                    Slider(value: $store.settings.fontSize, in: Settings.fontSizes, step: 1)
+    // displaysCard holds one switch per connected display.
+    private var displaysCard: some View {
+        let displays = Display.all()
+        return Card("Displays") {
+            ForEach(Array(displays.enumerated()), id: \.element.uuid) { index, display in
+                if index > 0 {
+                    RowDivider()
+                }
+                Row(display.name) {
+                    Toggle(display.name, isOn: shown(display.uuid)).labelsHidden()
+                }
+            }
+        }
+    }
+
+    // typefaceCard holds the font, weight, size, and capitals.
+    private var typefaceCard: some View {
+        Card("Typeface") {
+            Row("Font") {
+                Picker("Font", selection: fontChoice) {
+                    Text("System").tag(FontDesign.system.rawValue)
+                    Text("Rounded").tag(FontDesign.rounded.rawValue)
+                    Text("Mono").tag(FontDesign.mono.rawValue)
+                    Text("Serif").tag(FontDesign.serif.rawValue)
+                    Divider()
+                    ForEach(familyChoices, id: \.self) { family in
+                        Text(family).tag("family:" + family)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 200)
+            }
+            RowDivider()
+            Row("Weight") {
+                Picker("Weight", selection: $store.settings.weight) {
+                    Text("Regular").tag(Weight.regular)
+                    Text("Medium").tag(Weight.medium)
+                    Text("Semibold").tag(Weight.semibold)
+                    Text("Bold").tag(Weight.bold)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(width: 280)
+            }
+            RowDivider()
+            Row("Size") {
+                HStack(spacing: 8) {
+                    Slider(value: whole(\.fontSize), in: FuginautCore.Settings.fontSizes)
+                        .frame(width: 170)
                     Text("\(Int(store.settings.fontSize)) pt")
                         .monospacedDigit()
-                        .frame(width: 56, alignment: .trailing)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 44, alignment: .trailing)
                 }
             }
-            Picker("Weight", selection: $store.settings.weight) {
-                Text("Regular").tag(Weight.regular)
-                Text("Medium").tag(Weight.medium)
-                Text("Semibold").tag(Weight.semibold)
-                Text("Bold").tag(Weight.bold)
-            }
-            Toggle("Match the menu bar's text color", isOn: matchSystem)
-            if store.settings.color != nil {
-                ColorPicker("Color", selection: color, supportsOpacity: true)
+            RowDivider()
+            Row("All caps") {
+                Toggle("All caps", isOn: $store.settings.style.uppercase).labelsHidden()
             }
         }
     }
 
-    // time holds what the clock text shows.
-    private var time: some View {
-        Section("Time") {
-            Toggle("24-hour time", isOn: $store.settings.style.use24Hour)
-            Toggle("Seconds", isOn: $store.settings.style.showSeconds)
-            Toggle("Weekday", isOn: $store.settings.style.showWeekday)
-            Toggle("Date", isOn: $store.settings.style.showDate)
-            Picker("Second time zone", selection: $store.settings.style.secondZone) {
-                Text("None").tag("")
-                ForEach(Self.zones, id: \.self) { zone in
-                    Text(zone.replacingOccurrences(of: "_", with: " ")).tag(zone)
+    // colorCard holds the text color and the backing.
+    private var colorCard: some View {
+        Card("Color") {
+            Row("Match the menu bar", detail: "Follows light and dark menu bars on its own.") {
+                Toggle("Match the menu bar", isOn: matchSystem).labelsHidden()
+            }
+            if store.settings.color != nil {
+                RowDivider()
+                Row("Color") {
+                    ColorPicker("Color", selection: color, supportsOpacity: true).labelsHidden()
                 }
+            }
+            RowDivider()
+            Row("Backing", detail: "Keeps the text readable over busy wallpaper.") {
+                Picker("Backing", selection: $store.settings.backing) {
+                    Text("None").tag(Backing.none)
+                    Text("Shadow").tag(Backing.shadow)
+                    Text("Pill").tag(Backing.pill)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(width: 190)
+            }
+        }
+    }
+
+    // dayCard holds the date style and the time switches, or the custom pattern.
+    private var dayCard: some View {
+        Card("Day and time") {
+            Row("Style") {
+                Picker("Style", selection: $store.settings.style.dateStyle) {
+                    ForEach(DateStyle.allCases, id: \.self) { style in
+                        Text(Self.styleTitle(style)).tag(style)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 250)
+            }
+            if store.settings.style.dateStyle == .custom {
+                RowDivider()
+                Row("Pattern") {
+                    HStack(spacing: 8) {
+                        TextField("Pattern", text: $store.settings.style.customPattern)
+                            .font(.system(.body, design: .monospaced))
+                            .textFieldStyle(.roundedBorder)
+                            .labelsHidden()
+                            .frame(width: 210)
+                        ResetButton(disabled: store.settings.style.customPattern == ClockStyle.defaultCustomPattern) {
+                            store.settings.style.customPattern = ClockStyle.defaultCustomPattern
+                        }
+                    }
+                }
+                RowDivider()
+                HStack(spacing: 4) {
+                    Text("Unicode date letters, e.g. EEE d MMM HH:mm. Quote literal words.")
+                    if let help = Self.patternHelp {
+                        Link("Letters", destination: help)
+                    }
+                }
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                RowDivider()
+                Row("Weekday") {
+                    Toggle("Weekday", isOn: $store.settings.style.showWeekday).labelsHidden()
+                }
+                RowDivider()
+                Row("Date") {
+                    Toggle("Date", isOn: $store.settings.style.showDate).labelsHidden()
+                }
+                RowDivider()
+                Row("24-hour time") {
+                    Toggle("24-hour time", isOn: $store.settings.style.use24Hour).labelsHidden()
+                }
+                RowDivider()
+                Row("Seconds") {
+                    Toggle("Seconds", isOn: $store.settings.style.showSeconds).labelsHidden()
+                }
+            }
+        }
+    }
+
+    // secondTimeCard holds the second time zone and its label.
+    private var secondTimeCard: some View {
+        Card("Second time") {
+            Row("Time zone") {
+                Picker("Time zone", selection: $store.settings.style.secondZone) {
+                    Text("None").tag("")
+                    Divider()
+                    ForEach(Self.zones, id: \.self) { zone in
+                        Text(zone.replacingOccurrences(of: "_", with: " ")).tag(zone)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 220)
             }
             if !store.settings.style.secondZone.isEmpty {
-                TextField("Label", text: $store.settings.style.secondZoneLabel, prompt: Text("Zone abbreviation"))
+                RowDivider()
+                Row("Label") {
+                    TextField("Label", text: $store.settings.style.secondZoneLabel, prompt: Text("Zone abbreviation"))
+                        .textFieldStyle(.roundedBorder)
+                        .labelsHidden()
+                        .frame(width: 160)
+                }
             }
         }
     }
 
-    // general holds visibility, login, and reset.
-    private var general: some View {
-        Section {
-            Toggle("Show when the menu bar is hidden", isOn: $store.settings.showWhenBarHidden)
-            Toggle("Show menu bar icon", isOn: $store.settings.showMenuIcon)
-            Toggle("Open at login", isOn: openAtLogin)
-            if loginItem.needsApproval {
-                Text("Allow Fuginaut in System Settings, under General, then Login Items.")
-                    .foregroundStyle(.secondary)
+    // behaviorCard holds visibility and login.
+    private var behaviorCard: some View {
+        Card("Behavior") {
+            Row("Show when the menu bar hides", detail: "Keeps the clock up in full screen apps.") {
+                Toggle("Show when the menu bar hides", isOn: $store.settings.showWhenBarHidden).labelsHidden()
             }
-            if let error = loginItem.lastError {
-                Text(error)
-                    .foregroundStyle(.red)
+            RowDivider()
+            Row(
+                "Show menu bar icon",
+                detail: store.settings.showMenuIcon ? nil : "Open Fuginaut again from Applications to get back here."
+            ) {
+                Toggle("Show menu bar icon", isOn: $store.settings.showMenuIcon).labelsHidden()
             }
-            HStack {
-                Button("Restore Defaults") {
-                    store.reset()
-                }
-                Spacer()
-                Button("Quit Fuginaut") {
-                    NSApp.terminate(nil)
-                }
-            }
-        } footer: {
-            if !store.settings.showMenuIcon {
-                Text("To get back here with the icon hidden, open Fuginaut again from Applications or Spotlight.")
-                    .foregroundStyle(.secondary)
+            RowDivider()
+            Row("Open at login", detail: loginDetail) {
+                Toggle("Open at login", isOn: openAtLogin).labelsHidden()
             }
         }
     }
 
-    // shown binds a display's toggle to whether its UUID is absent from the hidden set.
+    // footer holds the version, reset, and quit.
+    private var footer: some View {
+        HStack {
+            Text("Fuginaut \(Self.version)")
+                .foregroundStyle(.secondary)
+            Spacer()
+            Button("Restore Defaults") {
+                store.reset()
+            }
+            Button("Quit Fuginaut") {
+                NSApp.terminate(nil)
+            }
+        }
+        .controlSize(.regular)
+        .padding(.horizontal, 4)
+    }
+
+    // loginDetail explains a login item that needs approval or failed to change.
+    private var loginDetail: String? {
+        if let error = loginItem.lastError {
+            return error
+        }
+        return loginItem.needsApproval ? "Allow Fuginaut in System Settings, under General, then Login Items." : nil
+    }
+
+    // version is the app's version from its bundle.
+    private static var version: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
+    }
+
+    // styleTitle names a date style with an example from today.
+    private static func styleTitle(_ style: DateStyle) -> String {
+        guard style != .custom else {
+            return "Custom pattern"
+        }
+        var sample = ClockStyle()
+        sample.dateStyle = style
+        let formatter = DateFormatter()
+        formatter.dateFormat = sample.dayPattern(locale: .current)
+        let name: String
+        switch style {
+        case .short: name = "Short"
+        case .long: name = "Long"
+        case .numeric: name = "Numeric"
+        case .iso: name = "ISO"
+        case .custom: name = "Custom"
+        }
+        return name + "  ·  " + formatter.string(from: Date())
+    }
+
+    // familyChoices lists installed families, plus the chosen one if it is no longer installed.
+    private var familyChoices: [String] {
+        let chosen = store.settings.fontFamily
+        if store.settings.fontDesign == .family, !chosen.isEmpty, !Self.families.contains(chosen) {
+            return [chosen] + Self.families
+        }
+        return Self.families
+    }
+
+    // fontChoice binds the font picker to the design and family, tagging families as "family:<name>".
+    private var fontChoice: Binding<String> {
+        Binding {
+            let s = store.settings
+            return s.fontDesign == .family ? "family:" + s.fontFamily : s.fontDesign.rawValue
+        } set: { tag in
+            var s = store.settings
+            if tag.hasPrefix("family:") {
+                s.fontDesign = .family
+                s.fontFamily = String(tag.dropFirst("family:".count))
+            } else {
+                s.fontDesign = FontDesign(rawValue: tag) ?? .system
+            }
+            store.settings = s
+        }
+    }
+
+    // whole binds a slider to a setting rounded to whole points, without the tick marks a step draws.
+    private func whole(_ key: WritableKeyPath<FuginautCore.Settings, Double>) -> Binding<Double> {
+        Binding {
+            store.settings[keyPath: key]
+        } set: { value in
+            store.settings[keyPath: key] = value.rounded()
+        }
+    }
+
+    // shown binds a display's switch to whether its UUID is absent from the hidden set.
     private func shown(_ uuid: String) -> Binding<Bool> {
         Binding {
             !store.settings.hiddenDisplays.contains(uuid)
@@ -139,7 +463,7 @@ struct SettingsView: View {
         }
     }
 
-    // matchSystem binds the toggle to whether the color follows the system.
+    // matchSystem binds the switch to whether the color follows the system.
     private var matchSystem: Binding<Bool> {
         Binding {
             store.settings.color == nil
@@ -163,12 +487,108 @@ struct SettingsView: View {
         }
     }
 
-    // openAtLogin binds the toggle to the login item registration.
+    // openAtLogin binds the switch to the login item registration.
     private var openAtLogin: Binding<Bool> {
         Binding {
             loginItem.isEnabled || loginItem.needsApproval
         } set: { on in
             loginItem.setEnabled(on)
         }
+    }
+}
+
+// Card groups rows under a heading on a rounded panel, like System Settings.
+struct Card<Content: View>: View {
+    // title is the heading above the panel.
+    let title: String
+    // content is the rows inside the panel.
+    @ViewBuilder let content: Content
+
+    // init builds a card from a heading and its rows.
+    init(_ title: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
+
+    // body draws the heading and the panel.
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .padding(.leading, 4)
+            VStack(spacing: 0) {
+                content
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.primary.opacity(0.045))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Color.primary.opacity(0.09))
+            )
+        }
+    }
+}
+
+// Row is one line of a card: a title with an optional detail line, and a control on the right.
+struct Row<Control: View>: View {
+    // title names the setting.
+    let title: String
+    // detail explains the setting in a smaller line, or is nil for none.
+    let detail: String?
+    // control changes the setting.
+    @ViewBuilder let control: Control
+
+    // init builds a row from a title, an optional detail, and its control.
+    init(_ title: String, detail: String? = nil, @ViewBuilder control: () -> Control) {
+        self.title = title
+        self.detail = detail
+        self.control = control()
+    }
+
+    // body draws the title on the left and the control on the right.
+    var body: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                if let detail {
+                    Text(detail)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            Spacer(minLength: 8)
+            control
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .frame(minHeight: 38)
+    }
+}
+
+// RowDivider separates rows inside a card, inset from the leading edge.
+struct RowDivider: View {
+    // body draws the hairline.
+    var body: some View {
+        Divider().padding(.leading, 12)
+    }
+}
+
+// ResetButton is a small borderless button that puts one setting back to its default.
+struct ResetButton: View {
+    // disabled dims the button when the setting is already at its default.
+    let disabled: Bool
+    // action restores the default.
+    let action: () -> Void
+
+    // body draws the arrow.
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "arrow.counterclockwise")
+        }
+        .buttonStyle(.borderless)
+        .disabled(disabled)
+        .help("Reset")
     }
 }

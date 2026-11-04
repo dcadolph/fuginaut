@@ -58,4 +58,19 @@ public enum Placement {
     public static func textY(barHeight: CGFloat, textHeight: CGFloat) -> CGFloat {
         max(0, (barHeight - textHeight) / 2)
     }
+
+    // pillInset is the space the pill leaves at each end of the panel.
+    public static let pillInset: CGFloat = 2
+    // pillOverhang is how far the pill reaches above and below the text.
+    public static let pillOverhang: CGFloat = 1
+
+    // pill returns the capsule's frame behind text inside a panel: nearly the panel's full width, a little
+    // taller than the text, and never outside the panel.
+    public static func pill(panel: CGRect, text: CGRect) -> CGRect {
+        let minY = max(panel.minY, text.minY - pillOverhang)
+        let maxY = min(panel.maxY, text.maxY + pillOverhang)
+        return CGRect(
+            x: panel.minX + pillInset, y: minY, width: max(0, panel.width - pillInset * 2), height: max(0, maxY - minY)
+        )
+    }
 }

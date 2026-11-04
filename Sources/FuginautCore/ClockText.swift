@@ -1,5 +1,19 @@
 import Foundation
 
+// DateStyle chooses how the day reads.
+public enum DateStyle: String, Codable, CaseIterable, Sendable {
+    // short reads like "Wed Nov 4".
+    case short
+    // long reads like "Wednesday, November 4".
+    case long
+    // numeric reads like "Wed 11/4", ordered for the locale.
+    case numeric
+    // iso reads like "Wed 2026-11-04".
+    case iso
+    // custom uses the style's custom pattern for the whole clock.
+    case custom
+}
+
 // ClockStyle chooses what the clock text shows.
 public struct ClockStyle: Codable, Equatable, Sendable {
     // use24Hour shows hours from 00 to 23 with no AM or PM.
@@ -14,6 +28,15 @@ public struct ClockStyle: Codable, Equatable, Sendable {
     public var secondZone = ""
     // secondZoneLabel names the second time, or empty to use the zone's abbreviation.
     public var secondZoneLabel = ""
+    // dateStyle chooses how the day reads.
+    public var dateStyle = DateStyle.short
+    // customPattern is the Unicode date pattern for the whole clock when dateStyle is custom.
+    public var customPattern = ClockStyle.defaultCustomPattern
+    // uppercase shows the clock text in capitals.
+    public var uppercase = false
+
+    // defaultCustomPattern is the pattern a new custom style starts from.
+    public static let defaultCustomPattern = "EEE d MMM  HH:mm"
 
     // init builds the default style.
     public init() {}
@@ -28,6 +51,9 @@ public struct ClockStyle: Codable, Equatable, Sendable {
         showDate = try c.decodeIfPresent(Bool.self, forKey: .showDate) ?? d.showDate
         secondZone = try c.decodeIfPresent(String.self, forKey: .secondZone) ?? d.secondZone
         secondZoneLabel = try c.decodeIfPresent(String.self, forKey: .secondZoneLabel) ?? d.secondZoneLabel
+        dateStyle = try c.decodeIfPresent(DateStyle.self, forKey: .dateStyle) ?? d.dateStyle
+        customPattern = try c.decodeIfPresent(String.self, forKey: .customPattern) ?? d.customPattern
+        uppercase = try c.decodeIfPresent(Bool.self, forKey: .uppercase) ?? d.uppercase
     }
 
     // timePattern is the date format for the time alone.
@@ -39,16 +65,40 @@ public struct ClockStyle: Codable, Equatable, Sendable {
         return use24Hour ? time : time + " a"
     }
 
-    // pattern is the date format for the whole clock, with two spaces between the day and the time.
-    public var pattern: String {
+    // pattern returns the date format for the whole clock, with two spaces between the day and the time.
+    // A custom style uses its own pattern, or the short style's when the custom pattern is blank.
+    public func pattern(locale: Locale) -> String {
+        if dateStyle == .custom, !customPattern.trimmingCharacters(in: .whitespaces).isEmpty {
+            return customPattern
+        }
+        guard let day = dayPattern(locale: locale) else {
+            return timePattern
+        }
+        return day + "  " + timePattern
+    }
+
+    // dayPattern returns the date format for the weekday and date, or nil when the style shows neither. A
+    // custom style reads as short here.
+    public func dayPattern(locale: Locale) -> String? {
+        let long = dateStyle == .long
         var day: [String] = []
         if showWeekday {
-            day.append("EEE")
+            day.append(long ? "EEEE" : "EEE")
         }
         if showDate {
-            day.append("MMM d")
+            day.append(datePattern(locale: locale))
         }
-        return day.isEmpty ? timePattern : day.joined(separator: " ") + "  " + timePattern
+        return day.isEmpty ? nil : day.joined(separator: long ? ", " : " ")
+    }
+
+    // datePattern returns the month and day part for the style.
+    private func datePattern(locale: Locale) -> String {
+        switch dateStyle {
+        case .short, .custom: "MMM d"
+        case .long: "MMMM d"
+        case .numeric: DateFormatter.dateFormat(fromTemplate: "Md", options: 0, locale: locale) ?? "M/d"
+        case .iso: "yyyy-MM-dd"
+        }
     }
 }
 
@@ -60,13 +110,17 @@ public final class ClockFormatter {
     private let second: DateFormatter?
     // secondLabel is the fixed label for the second time, or empty to use the zone's abbreviation.
     private let secondLabel: String
+    // uppercase shows the text in capitals.
+    private let uppercase: Bool
+    // locale is the locale the text is written and capitalized in.
+    private let locale: Locale
 
     // init prepares the formatters for the style in the given locale and local time zone.
     public init(style: ClockStyle, locale: Locale = .current, zone: TimeZone = .current) {
         main = DateFormatter()
         main.locale = locale
         main.timeZone = zone
-        main.dateFormat = style.pattern
+        main.dateFormat = style.pattern(locale: locale)
         if !style.secondZone.isEmpty, let other = TimeZone(identifier: style.secondZone) {
             let f = DateFormatter()
             f.locale = locale
@@ -77,15 +131,17 @@ public final class ClockFormatter {
             second = nil
         }
         secondLabel = style.secondZoneLabel.trimmingCharacters(in: .whitespaces)
+        uppercase = style.uppercase
+        self.locale = locale
     }
 
     // string returns the clock text for the date.
     public func string(_ date: Date) -> String {
-        let text = main.string(from: date)
-        guard let second, let zone = second.timeZone else {
-            return text
+        var text = main.string(from: date)
+        if let second, let zone = second.timeZone {
+            let label = secondLabel.isEmpty ? zone.abbreviation(for: date) ?? zone.identifier : secondLabel
+            text += "  ·  " + label + " " + second.string(from: date)
         }
-        let label = secondLabel.isEmpty ? zone.abbreviation(for: date) ?? zone.identifier : secondLabel
-        return text + "  ·  " + label + " " + second.string(from: date)
+        return uppercase ? text.uppercased(with: locale) : text
     }
 }

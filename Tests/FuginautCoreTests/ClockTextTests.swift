@@ -82,6 +82,50 @@ let clockTextCases: [ClockTextCase] = [
         },
         wantText: "Wed  3:07 PM"
     ),
+    ClockTextCase(  // Test 10: Long date.
+        name: "long", style: style { $0.dateStyle = .long }, wantText: "Wednesday, November 4  3:07 PM"
+    ),
+    ClockTextCase(  // Test 11: Long date without the weekday.
+        name: "long no weekday",
+        style: style {
+            $0.dateStyle = .long; $0.showWeekday = false
+        },
+        wantText: "November 4  3:07 PM"
+    ),
+    ClockTextCase(  // Test 12: Numeric date.
+        name: "numeric", style: style { $0.dateStyle = .numeric }, wantText: "Wed 11/4  3:07 PM"
+    ),
+    ClockTextCase(  // Test 13: ISO date.
+        name: "iso", style: style { $0.dateStyle = .iso }, wantText: "Wed 2026-11-04  3:07 PM"
+    ),
+    ClockTextCase(  // Test 14: Custom pattern ignores the other switches.
+        name: "custom",
+        style: style {
+            $0.dateStyle = .custom; $0.customPattern = "d.M. HH:mm:ss"; $0.showWeekday = false
+        },
+        wantText: "4.11. 15:07:09"
+    ),
+    ClockTextCase(  // Test 15: Default custom pattern.
+        name: "custom default", style: style { $0.dateStyle = .custom }, wantText: "Wed 4 Nov  15:07"
+    ),
+    ClockTextCase(  // Test 16: Blank custom pattern falls back to the short style.
+        name: "custom blank",
+        style: style {
+            $0.dateStyle = .custom; $0.customPattern = "   "
+        },
+        wantText: "Wed Nov 4  3:07 PM"
+    ),
+    ClockTextCase(  // Test 17: Capitals.
+        name: "uppercase", style: style { $0.uppercase = true }, wantText: "WED NOV 4  3:07 PM"
+    ),
+    ClockTextCase(  // Test 18: Capitals cover the second time.
+        name: "uppercase second zone",
+        style: style {
+            $0.uppercase = true; $0.showWeekday = false; $0.showDate = false
+            $0.secondZone = "Asia/Tokyo"; $0.secondZoneLabel = "tyo"
+        },
+        wantText: "3:07 PM  ·  TYO 12:07 AM"
+    ),
 ]
 
 // testClockText checks each style against the same moment.

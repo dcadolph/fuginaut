@@ -96,6 +96,10 @@ final class ClockPanels: NSObject {
 final class ClockPanel: NSPanel {
     // label draws the clock text.
     private let label = NSTextField(labelWithString: "")
+    // pill draws the capsule behind the text when the backing is a pill.
+    private let pill = PillView()
+    // settings is the look last applied.
+    private var settings = Settings()
 
     // init builds the panel at status bar level on every space.
     init() {
@@ -107,6 +111,7 @@ final class ClockPanel: NSPanel {
         level = .statusBar
         isReleasedWhenClosed = false
         let content = NSView()
+        content.addSubview(pill)
         content.addSubview(label)
         contentView = content
     }
@@ -116,14 +121,22 @@ final class ClockPanel: NSPanel {
         false
     }
 
-    // apply sets the font, color, and full screen behavior from the settings.
+    // apply sets the font, color, backing, and full screen behavior from the settings.
     func apply(_ settings: Settings) {
-        label.font = .monospacedDigitSystemFont(ofSize: settings.fontSize, weight: Self.weight(settings.weight))
-        if let c = settings.color {
-            label.textColor = NSColor(srgbRed: c.red, green: c.green, blue: c.blue, alpha: c.alpha)
+        self.settings = settings
+        label.font = ClockLook.font(settings)
+        label.textColor = ClockLook.dynamicText(settings)
+        if settings.backing == .shadow {
+            let shadow = NSShadow()
+            shadow.shadowBlurRadius = ClockLook.shadowBlur
+            shadow.shadowOffset = .zero
+            shadow.shadowColor = ClockLook.dynamicBacking(settings).withAlphaComponent(ClockLook.shadowAlpha)
+            label.shadow = shadow
         } else {
-            label.textColor = .labelColor
+            label.shadow = nil
         }
+        pill.color = ClockLook.dynamicBacking(settings).withAlphaComponent(ClockLook.pillAlpha)
+        pill.isHidden = settings.backing != .pill
         var behavior: NSWindow.CollectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
         if settings.showWhenBarHidden {
             behavior.insert(.fullScreenAuxiliary)
@@ -144,16 +157,47 @@ final class ClockPanel: NSPanel {
         setFrame(frame, display: false)
         let y = Placement.textY(barHeight: bar.height, textHeight: size.height)
         label.frame.origin = NSPoint(x: Placement.padding, y: y)
+        pill.frame = Placement.pill(panel: CGRect(origin: .zero, size: frame.size), text: label.frame)
         orderFrontRegardless()
     }
+}
 
-    // weight maps a settings weight to a font weight.
-    private static func weight(_ w: Weight) -> NSFont.Weight {
-        switch w {
-        case .regular: .regular
-        case .medium: .medium
-        case .semibold: .semibold
-        case .bold: .bold
+// PillView fills its bounds with a capsule, resolving its color against the current appearance.
+final class PillView: NSView {
+    // color fills the capsule.
+    var color: NSColor = .clear {
+        didSet {
+            needsDisplay = true
         }
+    }
+
+    // wantsUpdateLayer draws through updateLayer instead of draw.
+    override var wantsUpdateLayer: Bool {
+        true
+    }
+
+    // init builds a layer backed view.
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        wantsLayer = true
+    }
+
+    // init is not supported, since the view is only built in code.
+    required init?(coder: NSCoder) {
+        nil
+    }
+
+    // updateLayer sets the capsule's color and rounding for the current appearance and size.
+    override func updateLayer() {
+        effectiveAppearance.performAsCurrentDrawingAppearance {
+            layer?.backgroundColor = color.cgColor
+        }
+        layer?.cornerRadius = bounds.height / 2
+    }
+
+    // layout keeps the rounding a capsule as the size changes.
+    override func layout() {
+        super.layout()
+        needsDisplay = true
     }
 }

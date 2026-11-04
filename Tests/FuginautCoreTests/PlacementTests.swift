@@ -101,3 +101,22 @@ func testTextY(barHeight: CGFloat, textHeight: CGFloat, wantY: CGFloat) {
     let got: CGFloat = Placement.textY(barHeight: barHeight, textHeight: textHeight)
     #expect(got == wantY)
 }
+
+// testPill checks the capsule behind the text, including text that fills the panel.
+@Test(arguments: [
+    (  // Test 0: Text centered in the bar.
+        CGRect(x: 0, y: 0, width: 200, height: 24), CGRect(x: 8, y: 4, width: 184, height: 16),
+        CGRect(x: 2, y: 3, width: 196, height: 18)
+    ),
+    (  // Test 1: Text as tall as the panel stays inside it.
+        CGRect(x: 0, y: 0, width: 200, height: 24), CGRect(x: 8, y: 0, width: 184, height: 24),
+        CGRect(x: 2, y: 0, width: 196, height: 24)
+    ),
+    (  // Test 2: Panel narrower than the insets has no width.
+        CGRect(x: 0, y: 0, width: 3, height: 24), CGRect(x: 0, y: 4, width: 0, height: 16),
+        CGRect(x: 2, y: 3, width: 0, height: 18)
+    ),
+])
+func testPill(panel: CGRect, text: CGRect, wantPill: CGRect) {
+    #expect(Placement.pill(panel: panel, text: text) == wantPill)
+}

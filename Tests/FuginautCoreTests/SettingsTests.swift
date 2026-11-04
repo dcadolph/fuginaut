@@ -54,8 +54,18 @@ let settingsCases: [SettingsCase] = [
             $0.color = RGBA(red: 1, green: 0.5, blue: 0, alpha: 0.8); $0.hiddenDisplays = ["A"]
         }
     ),
-    SettingsCase(name: "bad anchor", json: #"{"anchor":"up"}"#, wantSettings: nil),  // Test 6: Unknown anchor.
-    SettingsCase(name: "not json", json: "nope", wantSettings: nil),  // Test 7: Malformed.
+    SettingsCase(  // Test 6: Font, backing, and new style fields.
+        name: "font and backing",
+        json:
+            #"{"fontDesign":"family","fontFamily":"Avenir Next","backing":"pill","style":{"dateStyle":"iso","uppercase":true}}"#,
+        wantSettings: settings {
+            $0.fontDesign = .family; $0.fontFamily = "Avenir Next"; $0.backing = .pill
+            $0.style.dateStyle = .iso; $0.style.uppercase = true
+        }
+    ),
+    SettingsCase(name: "bad backing", json: #"{"backing":"glow"}"#, wantSettings: nil),  // Test 7: Unknown backing.
+    SettingsCase(name: "bad anchor", json: #"{"anchor":"up"}"#, wantSettings: nil),  // Test 8: Unknown anchor.
+    SettingsCase(name: "not json", json: "nope", wantSettings: nil),  // Test 9: Malformed.
 ]
 
 // testDecode checks each saved form.
@@ -73,10 +83,16 @@ func testRoundTrip() throws {
         $0.offset = -12
         $0.fontSize = 18
         $0.weight = .bold
+        $0.fontDesign = .rounded
+        $0.fontFamily = "Menlo"
+        $0.backing = .shadow
         $0.color = RGBA(red: 0.2, green: 0.4, blue: 0.6, alpha: 1)
         $0.style.showSeconds = true
         $0.style.secondZone = "Europe/London"
         $0.style.secondZoneLabel = "LON"
+        $0.style.dateStyle = .custom
+        $0.style.customPattern = "HH:mm"
+        $0.style.uppercase = true
         $0.hiddenDisplays = ["X", "Y"]
         $0.showWhenBarHidden = true
         $0.showMenuIcon = false
@@ -89,4 +105,32 @@ func testRoundTrip() throws {
 @Test
 func testRGBAClamp() {
     #expect(RGBA(red: -1, green: 2, blue: 0.5, alpha: 3) == RGBA(red: 0, green: 1, blue: 0.5, alpha: 1))
+}
+
+// LightCase is one light or dark color expectation.
+struct LightCase: Sendable, CustomTestStringConvertible {
+    // Name labels the case.
+    let name: String
+    // Color is the text color.
+    let color: RGBA
+    // WantLight is whether the color reads as light.
+    let wantLight: Bool
+
+    // testDescription labels the case in test output.
+    var testDescription: String { name }
+}
+
+// lightCases covers the extremes and colors near the middle.
+let lightCases: [LightCase] = [
+    LightCase(name: "white", color: RGBA(red: 1, green: 1, blue: 1), wantLight: true),  // Test 0: White.
+    LightCase(name: "black", color: RGBA(red: 0, green: 0, blue: 0), wantLight: false),  // Test 1: Black.
+    LightCase(name: "yellow", color: RGBA(red: 1, green: 0.85, blue: 0), wantLight: true),  // Test 2: Yellow.
+    LightCase(name: "navy", color: RGBA(red: 0, green: 0, blue: 0.5), wantLight: false),  // Test 3: Navy.
+    LightCase(name: "mid gray", color: RGBA(red: 0.5, green: 0.5, blue: 0.5), wantLight: true),  // Test 4: Gray.
+]
+
+// testIsLight checks which colors call for a dark backing.
+@Test(arguments: lightCases)
+func testIsLight(test: LightCase) {
+    #expect(test.color.isLight == test.wantLight)
 }
