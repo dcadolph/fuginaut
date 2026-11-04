@@ -20,9 +20,7 @@ struct PlacementCase: Sendable, CustomTestStringConvertible {
     let bar: Bar
     // Text is the text size.
     let text: CGSize
-    // Anchor is where the clock sits.
-    let anchor: Anchor
-    // Offset nudges the clock right.
+    // Offset nudges the clock right of center.
     let offset: CGFloat
     // WantFrame is the expected panel frame, or nil when the panel should hide.
     let wantFrame: CGRect?
@@ -31,55 +29,55 @@ struct PlacementCase: Sendable, CustomTestStringConvertible {
     var testDescription: String { name }
 }
 
-// placementCases covers both anchors, nudges, edges, the notch, tall text, and a hidden bar.
+// placementCases covers centering, nudges, edges, the notch, tall text, and a hidden bar.
 let placementCases: [PlacementCase] = [
     PlacementCase(  // Test 0: Centered on an ultrawide.
-        name: "center", bar: screen, text: CGSize(width: 184, height: 16), anchor: .center, offset: 0,
+        name: "center", bar: screen, text: CGSize(width: 184, height: 16), offset: 0,
         wantFrame: CGRect(x: 1620, y: 1416, width: 200, height: 24)
     ),
-    PlacementCase(  // Test 1: Left edge.
-        name: "left", bar: screen, text: CGSize(width: 184, height: 16), anchor: .left, offset: 0,
-        wantFrame: CGRect(x: 0, y: 1416, width: 200, height: 24)
+    PlacementCase(  // Test 1: Nudged left of center.
+        name: "nudge left", bar: screen, text: CGSize(width: 184, height: 16), offset: -100,
+        wantFrame: CGRect(x: 1520, y: 1416, width: 200, height: 24)
     ),
     PlacementCase(  // Test 2: Nudged right of center.
-        name: "nudge right", bar: screen, text: CGSize(width: 184, height: 16), anchor: .center, offset: 100,
+        name: "nudge right", bar: screen, text: CGSize(width: 184, height: 16), offset: 100,
         wantFrame: CGRect(x: 1720, y: 1416, width: 200, height: 24)
     ),
     PlacementCase(  // Test 3: Nudged left past the edge stays on screen.
-        name: "clamp left", bar: screen, text: CGSize(width: 184, height: 16), anchor: .left, offset: -50,
+        name: "clamp left", bar: screen, text: CGSize(width: 184, height: 16), offset: -5000,
         wantFrame: CGRect(x: 0, y: 1416, width: 200, height: 24)
     ),
     PlacementCase(  // Test 4: Nudged right past the edge stays on screen.
-        name: "clamp right", bar: screen, text: CGSize(width: 184, height: 16), anchor: .center, offset: 5000,
+        name: "clamp right", bar: screen, text: CGSize(width: 184, height: 16), offset: 5000,
         wantFrame: CGRect(x: 3240, y: 1416, width: 200, height: 24)
     ),
     PlacementCase(  // Test 5: Fractional text width rounds up.
-        name: "round up", bar: screen, text: CGSize(width: 183.2, height: 15.4), anchor: .left, offset: 0,
-        wantFrame: CGRect(x: 0, y: 1416, width: 200, height: 24)
+        name: "round up", bar: screen, text: CGSize(width: 183.2, height: 15.4), offset: 0,
+        wantFrame: CGRect(x: 1620, y: 1416, width: 200, height: 24)
     ),
     PlacementCase(  // Test 6: Tall text grows the panel down from the top.
-        name: "tall", bar: screen, text: CGSize(width: 384, height: 48), anchor: .left, offset: 0,
-        wantFrame: CGRect(x: 0, y: 1392, width: 400, height: 48)
+        name: "tall", bar: screen, text: CGSize(width: 384, height: 48), offset: 0,
+        wantFrame: CGRect(x: 1520, y: 1392, width: 400, height: 48)
     ),
     PlacementCase(  // Test 7: Centered under a notch moves right of it.
-        name: "notch center", bar: notched, text: CGSize(width: 184, height: 16), anchor: .center, offset: 0,
+        name: "notch center", bar: notched, text: CGSize(width: 184, height: 16), offset: 0,
         wantFrame: CGRect(x: 856, y: 950, width: 200, height: 32)
     ),
     PlacementCase(  // Test 8: Overlapping the notch's left side moves left of it.
-        name: "notch left", bar: notched, text: CGSize(width: 184, height: 16), anchor: .left, offset: 500,
+        name: "notch left", bar: notched, text: CGSize(width: 184, height: 16), offset: -156,
         wantFrame: CGRect(x: 456, y: 950, width: 200, height: 32)
     ),
     PlacementCase(  // Test 9: Touching the notch edge does not move.
-        name: "notch edge", bar: notched, text: CGSize(width: 184, height: 16), anchor: .left, offset: 456,
+        name: "notch edge", bar: notched, text: CGSize(width: 184, height: 16), offset: -200,
         wantFrame: CGRect(x: 456, y: 950, width: 200, height: 32)
     ),
     PlacementCase(  // Test 10: Hidden bar hides the panel.
         name: "hidden", bar: Bar(frame: screen.frame, height: 0), text: CGSize(width: 184, height: 16),
-        anchor: .center, offset: 0, wantFrame: nil
+        offset: 0, wantFrame: nil
     ),
     PlacementCase(  // Test 11: Second display to the right of the first.
         name: "second display", bar: Bar(frame: CGRect(x: 3440, y: 0, width: 1920, height: 1080), height: 24),
-        text: CGSize(width: 184, height: 16), anchor: .center, offset: 0,
+        text: CGSize(width: 184, height: 16), offset: 0,
         wantFrame: CGRect(x: 4300, y: 1056, width: 200, height: 24)
     ),
 ]
@@ -87,7 +85,7 @@ let placementCases: [PlacementCase] = [
 // testFrame checks each placement.
 @Test(arguments: placementCases)
 func testFrame(test: PlacementCase) {
-    let got = Placement.frame(bar: test.bar, text: test.text, anchor: test.anchor, offset: test.offset)
+    let got = Placement.frame(bar: test.bar, text: test.text, offset: test.offset)
     #expect(got == test.wantFrame)
 }
 

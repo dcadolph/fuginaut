@@ -27,9 +27,9 @@ func settings(_ change: (inout Settings) -> Void) -> Settings {
 let settingsCases: [SettingsCase] = [
     SettingsCase(name: "empty", json: "{}", wantSettings: Settings()),  // Test 0: All defaults.
     SettingsCase(  // Test 1: Partial keeps the rest default.
-        name: "partial", json: #"{"anchor":"left","fontSize":20}"#,
+        name: "partial", json: #"{"offset":-40,"fontSize":20}"#,
         wantSettings: settings {
-            $0.anchor = .left; $0.fontSize = 20
+            $0.offset = -40; $0.fontSize = 20
         }
     ),
     SettingsCase(  // Test 2: Too big is clamped.
@@ -48,10 +48,10 @@ let settingsCases: [SettingsCase] = [
         name: "nested", json: #"{"style":{"use24Hour":true}}"#,
         wantSettings: settings { $0.style.use24Hour = true }
     ),
-    SettingsCase(  // Test 5: Color and hidden displays.
-        name: "color", json: #"{"color":{"red":1,"green":0.5,"blue":0,"alpha":0.8},"hiddenDisplays":["A"]}"#,
+    SettingsCase(  // Test 5: Color and display choices.
+        name: "color", json: #"{"color":{"red":1,"green":0.5,"blue":0,"alpha":0.8},"displays":{"A":false}}"#,
         wantSettings: settings {
-            $0.color = RGBA(red: 1, green: 0.5, blue: 0, alpha: 0.8); $0.hiddenDisplays = ["A"]
+            $0.color = RGBA(red: 1, green: 0.5, blue: 0, alpha: 0.8); $0.displays = ["A": false]
         }
     ),
     SettingsCase(  // Test 6: Font, backing, and new style fields.
@@ -64,7 +64,7 @@ let settingsCases: [SettingsCase] = [
         }
     ),
     SettingsCase(name: "bad backing", json: #"{"backing":"glow"}"#, wantSettings: nil),  // Test 7: Unknown backing.
-    SettingsCase(name: "bad anchor", json: #"{"anchor":"up"}"#, wantSettings: nil),  // Test 8: Unknown anchor.
+    SettingsCase(name: "bad weight", json: #"{"weight":"heavy"}"#, wantSettings: nil),  // Test 8: Unknown weight.
     SettingsCase(name: "not json", json: "nope", wantSettings: nil),  // Test 9: Malformed.
 ]
 
@@ -79,7 +79,6 @@ func testDecode(test: SettingsCase) {
 @Test
 func testRoundTrip() throws {
     let want = settings {
-        $0.anchor = .left
         $0.offset = -12
         $0.fontSize = 18
         $0.weight = .bold
@@ -93,7 +92,7 @@ func testRoundTrip() throws {
         $0.style.dateStyle = .custom
         $0.style.customPattern = "HH:mm"
         $0.style.uppercase = true
-        $0.hiddenDisplays = ["X", "Y"]
+        $0.displays = ["X": false, "Y": true]
         $0.showWhenBarHidden = true
         $0.showMenuIcon = false
     }
@@ -133,4 +132,51 @@ let lightCases: [LightCase] = [
 @Test(arguments: lightCases)
 func testIsLight(test: LightCase) {
     #expect(test.color.isLight == test.wantLight)
+}
+
+// ShowsCase is one expectation for whether a display shows the clock.
+struct ShowsCase: Sendable, CustomTestStringConvertible {
+    // Name labels the case.
+    let name: String
+    // Displays holds the saved choices.
+    let displays: [String: Bool]
+    // BuiltIn is whether the display is a laptop's own screen.
+    let builtIn: Bool
+    // ExternalConnected is whether any external display is connected.
+    let externalConnected: Bool
+    // WantShows is whether the display shows the clock.
+    let wantShows: Bool
+
+    // testDescription labels the case in test output.
+    var testDescription: String { name }
+}
+
+// showsCases covers the defaults for each kind of display and choices that override them.
+let showsCases: [ShowsCase] = [
+    ShowsCase(  // Test 0: External display shows by default.
+        name: "external", displays: [:], builtIn: false, externalConnected: true, wantShows: true
+    ),
+    ShowsCase(  // Test 1: Laptop screen starts off beside an external display.
+        name: "built-in with external", displays: [:], builtIn: true, externalConnected: true, wantShows: false
+    ),
+    ShowsCase(  // Test 2: Laptop screen alone shows, so a first run is never blank.
+        name: "built-in alone", displays: [:], builtIn: true, externalConnected: false, wantShows: true
+    ),
+    ShowsCase(  // Test 3: Choosing on wins over the default.
+        name: "chosen on", displays: ["D": true], builtIn: true, externalConnected: true, wantShows: true
+    ),
+    ShowsCase(  // Test 4: Choosing off wins over the default.
+        name: "chosen off", displays: ["D": false], builtIn: false, externalConnected: true, wantShows: false
+    ),
+    ShowsCase(  // Test 5: Another display's choice does not apply.
+        name: "other choice", displays: ["E": false], builtIn: false, externalConnected: true, wantShows: true
+    ),
+]
+
+// testShows checks which displays show the clock.
+@Test(arguments: showsCases)
+func testShows(test: ShowsCase) {
+    var s = Settings()
+    s.displays = test.displays
+    #expect(s.shows("D", builtIn: test.builtIn, externalConnected: test.externalConnected) == test.wantShows)
 }

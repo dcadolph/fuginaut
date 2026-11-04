@@ -77,9 +77,7 @@ public struct Settings: Codable, Equatable, Sendable {
     // offsets is the allowed range for offset, in points.
     public static let offsets: ClosedRange<Double> = -600...600
 
-    // anchor is where the clock sits along the bar.
-    public var anchor: Anchor = .center
-    // offset moves the clock right from its anchor, in points. Negative moves it left.
+    // offset moves the clock right from the center of the bar, in points. Negative moves it left.
     public var offset: Double = 0
     // fontSize is the clock's font size, in points.
     public var fontSize: Double = 13
@@ -95,8 +93,9 @@ public struct Settings: Codable, Equatable, Sendable {
     public var color: RGBA?
     // style chooses what the clock text shows.
     public var style = ClockStyle()
-    // hiddenDisplays holds the UUIDs of displays that show no clock.
-    public var hiddenDisplays: Set<String> = []
+    // displays holds the user's choice to show or hide the clock, keyed by display UUID. Displays without a
+    // choice follow shows.
+    public var displays: [String: Bool] = [:]
     // showWhenBarHidden keeps the clock up in full screen and when the menu bar hides itself.
     public var showWhenBarHidden = false
     // showMenuIcon shows the menu bar icon that opens settings.
@@ -109,7 +108,6 @@ public struct Settings: Codable, Equatable, Sendable {
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         let d = Settings()
-        anchor = try c.decodeIfPresent(Anchor.self, forKey: .anchor) ?? d.anchor
         offset = try c.decodeIfPresent(Double.self, forKey: .offset) ?? d.offset
         fontSize = try c.decodeIfPresent(Double.self, forKey: .fontSize) ?? d.fontSize
         weight = try c.decodeIfPresent(Weight.self, forKey: .weight) ?? d.weight
@@ -118,10 +116,17 @@ public struct Settings: Codable, Equatable, Sendable {
         backing = try c.decodeIfPresent(Backing.self, forKey: .backing) ?? d.backing
         color = try c.decodeIfPresent(RGBA.self, forKey: .color)
         style = try c.decodeIfPresent(ClockStyle.self, forKey: .style) ?? d.style
-        hiddenDisplays = try c.decodeIfPresent(Set<String>.self, forKey: .hiddenDisplays) ?? d.hiddenDisplays
+        displays = try c.decodeIfPresent([String: Bool].self, forKey: .displays) ?? d.displays
         showWhenBarHidden = try c.decodeIfPresent(Bool.self, forKey: .showWhenBarHidden) ?? d.showWhenBarHidden
         showMenuIcon = try c.decodeIfPresent(Bool.self, forKey: .showMenuIcon) ?? d.showMenuIcon
         offset = min(Self.offsets.upperBound, max(Self.offsets.lowerBound, offset))
         fontSize = min(Self.fontSizes.upperBound, max(Self.fontSizes.lowerBound, fontSize))
+    }
+
+    // shows reports whether a display shows the clock. A choice the user made wins. Otherwise the clock
+    // shows everywhere except a built-in screen while an external display is connected, since the clock is
+    // for wide screens where Apple's clock sits far from the middle.
+    public func shows(_ uuid: String, builtIn: Bool, externalConnected: Bool) -> Bool {
+        displays[uuid] ?? !(builtIn && externalConnected)
     }
 }

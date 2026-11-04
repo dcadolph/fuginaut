@@ -45,8 +45,11 @@ struct ClockPreview: View {
             }
             HStack {
                 Label("Live preview", systemImage: "eye")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.85))
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 8)
+                    .frame(height: 20)
+                    .background(Capsule().fill(.black.opacity(0.28)))
                 Spacer()
                 appearanceSwitch
             }
@@ -54,19 +57,15 @@ struct ClockPreview: View {
         }
     }
 
-    // wallpaper is a dusk gradient, darker for the dark bar.
+    // wallpaper is a flat two-tone split on a hard diagonal, like a skate shop sign: pool blue over sun
+    // yellow for the light bar, deep teal over burnt orange for the dark one.
     private var wallpaper: some View {
-        let colors: [Color] =
-            dark
-            ? [
-                Color(red: 0.05, green: 0.08, blue: 0.20), Color(red: 0.23, green: 0.13, blue: 0.33),
-                Color(red: 0.72, green: 0.36, blue: 0.20),
-            ]
-            : [
-                Color(red: 0.45, green: 0.64, blue: 0.88), Color(red: 0.70, green: 0.66, blue: 0.86),
-                Color(red: 0.97, green: 0.72, blue: 0.52),
-            ]
-        return LinearGradient(colors: colors, startPoint: .top, endPoint: .bottom)
+        let top = dark ? Color(red: 0.05, green: 0.23, blue: 0.26) : Color(red: 0.25, green: 0.65, blue: 0.79)
+        let bottom = dark ? Color(red: 0.78, green: 0.31, blue: 0.16) : Color(red: 0.96, green: 0.78, blue: 0.27)
+        return ZStack {
+            top
+            DiagonalSplit().fill(bottom)
+        }
     }
 
     // appearanceSwitch flips the preview between a light and a dark menu bar.
@@ -130,7 +129,7 @@ struct ClockPreview: View {
         let strip = Bar(frame: CGRect(x: 0, y: 0, width: width, height: max(barHeight, size.height)), height: barHeight)
         let offset = settings.offset * width / Self.screenWidth
         let panel =
-            Placement.frame(bar: strip, text: size, anchor: settings.anchor, offset: offset)
+            Placement.frame(bar: strip, text: size, offset: offset)
             ?? CGRect(x: 0, y: 0, width: size.width + Placement.padding * 2, height: barHeight)
         let textBottom = Placement.textY(barHeight: barHeight, textHeight: size.height)
         let textRect = CGRect(x: Placement.padding, y: textBottom, width: size.width, height: size.height)
@@ -156,7 +155,20 @@ struct ClockPreview: View {
         }
         .frame(width: panel.width, height: panel.height, alignment: .topLeading)
         .offset(x: panel.minX)
-        .animation(.snappy(duration: 0.2), value: settings.anchor)
     }
 
+}
+
+// DiagonalSplit is the lower part of a rectangle cut by a line rising from left to right.
+struct DiagonalSplit: Shape {
+    // path fills below the line from 80 percent down the left edge to 35 percent down the right edge.
+    func path(in rect: CGRect) -> Path {
+        Path { p in
+            p.move(to: CGPoint(x: rect.minX, y: rect.minY + rect.height * 0.8))
+            p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + rect.height * 0.35))
+            p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+            p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+            p.closeSubpath()
+        }
+    }
 }

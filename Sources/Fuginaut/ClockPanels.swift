@@ -71,7 +71,7 @@ final class ClockPanels: NSObject {
     @objc private func layout() {
         let settings = store.settings
         var seen = Set<CGDirectDisplayID>()
-        for display in Display.all() where !settings.hiddenDisplays.contains(display.uuid) {
+        for display in Display.shown(settings) {
             seen.insert(display.id)
             let panel = panels[display.id] ?? makePanel(display.id)
             panel.show(text: text, bar: display.bar(fallback: settings.showWhenBarHidden), settings: settings)
@@ -149,8 +149,7 @@ final class ClockPanel: NSPanel {
         label.stringValue = text
         label.sizeToFit()
         let size = label.frame.size
-        let anchor = settings.anchor
-        guard let frame = Placement.frame(bar: bar, text: size, anchor: anchor, offset: settings.offset) else {
+        guard let frame = Placement.frame(bar: bar, text: size, offset: settings.offset) else {
             orderOut(nil)
             return
         }

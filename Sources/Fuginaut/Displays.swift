@@ -11,6 +11,8 @@ struct Display {
     let uuid: String
     // name is the display's name as macOS shows it.
     let name: String
+    // builtIn reports whether the display is a laptop's own screen.
+    let builtIn: Bool
     // screen is the AppKit screen for the display.
     let screen: NSScreen
 
@@ -21,8 +23,16 @@ struct Display {
             guard let id = screen.deviceDescription[key] as? CGDirectDisplayID else {
                 return nil
             }
-            return Display(id: id, uuid: uuid(id), name: screen.localizedName, screen: screen)
+            let builtIn = CGDisplayIsBuiltin(id) != 0
+            return Display(id: id, uuid: uuid(id), name: screen.localizedName, builtIn: builtIn, screen: screen)
         }
+    }
+
+    // shown returns the displays that show the clock under the given settings.
+    static func shown(_ settings: Settings) -> [Display] {
+        let displays = all()
+        let external = displays.contains { !$0.builtIn }
+        return displays.filter { settings.shows($0.uuid, builtIn: $0.builtIn, externalConnected: external) }
     }
 
     // uuid returns the display's stable UUID string, or its number when macOS has no UUID for it.

@@ -5,7 +5,7 @@ import FuginautCore
 
 // SettingsTab names one page of the settings window.
 enum SettingsTab: String, CaseIterable, Identifiable {
-    case placement
+    case size
     case text
     case format
     case general
@@ -16,7 +16,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
     // title is the tab's label.
     var title: String {
         switch self {
-        case .placement: "Placement"
+        case .size: "Size"
         case .text: "Text"
         case .format: "Format"
         case .general: "General"
@@ -26,7 +26,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
     // symbol is the tab's SF Symbol.
     var symbol: String {
         switch self {
-        case .placement: "menubar.rectangle"
+        case .size: "textformat.size"
         case .text: "textformat"
         case .format: "calendar.badge.clock"
         case .general: "gearshape"
@@ -42,7 +42,7 @@ struct SettingsView: View {
     // loginItem starts Fuginaut at login.
     var loginItem: LoginItem
     // tab is the page on show.
-    @State var tab: SettingsTab = .placement
+    @State var tab: SettingsTab = .size
     // previewDark draws the preview's menu bar dark, or follows the system when nil.
     @State var previewDark: Bool?
     // previewDate pins the preview's time, for stills. Nil shows the live time.
@@ -128,9 +128,9 @@ struct SettingsView: View {
     // page returns the cards for the current tab.
     @ViewBuilder private var page: some View {
         switch tab {
-        case .placement:
+        case .size:
+            sizeCard
             positionCard
-            displaysCard
         case .text:
             typefaceCard
             colorCard
@@ -138,25 +138,44 @@ struct SettingsView: View {
             dayCard
             secondTimeCard
         case .general:
+            displaysCard
             behaviorCard
             footer
         }
     }
 
-    // positionCard holds the anchor and the nudge.
-    private var positionCard: some View {
-        Card("Position") {
-            Row("Place", detail: "Left sits at the screen's left edge, over the app menus.") {
-                Picker("Place", selection: $store.settings.anchor) {
-                    Text("Center").tag(Anchor.center)
-                    Text("Left").tag(Anchor.left)
+    // sizeCard holds how big and how heavy the clock reads.
+    private var sizeCard: some View {
+        Card("Size") {
+            Row("Size") {
+                HStack(spacing: 8) {
+                    Slider(value: whole(\.fontSize), in: FuginautCore.Settings.fontSizes)
+                        .frame(width: 220)
+                    Text("\(Int(store.settings.fontSize)) pt")
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                        .frame(width: 44, alignment: .trailing)
+                }
+            }
+            RowDivider()
+            Row("Weight") {
+                Picker("Weight", selection: $store.settings.weight) {
+                    Text("Regular").tag(Weight.regular)
+                    Text("Medium").tag(Weight.medium)
+                    Text("Semibold").tag(Weight.semibold)
+                    Text("Bold").tag(Weight.bold)
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
-                .frame(width: 150)
+                .frame(width: 280)
             }
-            RowDivider()
-            Row("Nudge") {
+        }
+    }
+
+    // positionCard holds the nudge away from the center of the bar.
+    private var positionCard: some View {
+        Card("Position") {
+            Row("Nudge", detail: "The clock sits at the center of the menu bar. Nudge it off a busy spot.") {
                 HStack(spacing: 8) {
                     Slider(value: whole(\.offset), in: FuginautCore.Settings.offsets)
                         .frame(width: 170)
@@ -172,22 +191,24 @@ struct SettingsView: View {
         }
     }
 
-    // displaysCard holds one switch per connected display.
+    // displaysCard holds one switch per connected display. A laptop's own screen starts off while an external
+    // display is connected.
     private var displaysCard: some View {
         let displays = Display.all()
+        let external = displays.contains { !$0.builtIn }
         return Card("Displays") {
             ForEach(Array(displays.enumerated()), id: \.element.uuid) { index, display in
                 if index > 0 {
                     RowDivider()
                 }
                 Row(display.name) {
-                    Toggle(display.name, isOn: shown(display.uuid)).labelsHidden()
+                    Toggle(display.name, isOn: shown(display, external: external)).labelsHidden()
                 }
             }
         }
     }
 
-    // typefaceCard holds the font, weight, size, and capitals.
+    // typefaceCard holds the font and capitals.
     private var typefaceCard: some View {
         Card("Typeface") {
             Row("Font") {
@@ -203,29 +224,6 @@ struct SettingsView: View {
                 }
                 .labelsHidden()
                 .frame(width: 200)
-            }
-            RowDivider()
-            Row("Weight") {
-                Picker("Weight", selection: $store.settings.weight) {
-                    Text("Regular").tag(Weight.regular)
-                    Text("Medium").tag(Weight.medium)
-                    Text("Semibold").tag(Weight.semibold)
-                    Text("Bold").tag(Weight.bold)
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .frame(width: 280)
-            }
-            RowDivider()
-            Row("Size") {
-                HStack(spacing: 8) {
-                    Slider(value: whole(\.fontSize), in: FuginautCore.Settings.fontSizes)
-                        .frame(width: 170)
-                    Text("\(Int(store.settings.fontSize)) pt")
-                        .monospacedDigit()
-                        .foregroundStyle(.secondary)
-                        .frame(width: 44, alignment: .trailing)
-                }
             }
             RowDivider()
             Row("All caps") {
@@ -450,16 +448,12 @@ struct SettingsView: View {
         }
     }
 
-    // shown binds a display's switch to whether its UUID is absent from the hidden set.
-    private func shown(_ uuid: String) -> Binding<Bool> {
+    // shown binds a display's switch to whether it shows the clock, recording a flip as the user's choice.
+    private func shown(_ display: Display, external: Bool) -> Binding<Bool> {
         Binding {
-            !store.settings.hiddenDisplays.contains(uuid)
+            store.settings.shows(display.uuid, builtIn: display.builtIn, externalConnected: external)
         } set: { on in
-            if on {
-                store.settings.hiddenDisplays.remove(uuid)
-            } else {
-                store.settings.hiddenDisplays.insert(uuid)
-            }
+            store.settings.displays[display.uuid] = on
         }
     }
 
