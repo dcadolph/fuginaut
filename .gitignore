@@ -1,0 +1,8 @@
+.DS_Store
+.idea
+.build/
+.swiftpm/
+*.xcodeproj/
+xcuserdata/
+DerivedData/
+Fuginaut.app/
