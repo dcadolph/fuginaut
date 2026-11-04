@@ -25,29 +25,37 @@ func settings(_ change: (inout Settings) -> Void) -> Settings {
 
 // settingsCases covers empty, partial, out of range, nested, and malformed input.
 let settingsCases: [SettingsCase] = [
-    SettingsCase(name: "empty", json: "{}", wantSettings: Settings()), // Test 0: All defaults.
-    SettingsCase( // Test 1: Partial keeps the rest default.
+    SettingsCase(name: "empty", json: "{}", wantSettings: Settings()),  // Test 0: All defaults.
+    SettingsCase(  // Test 1: Partial keeps the rest default.
         name: "partial", json: #"{"anchor":"left","fontSize":20}"#,
-        wantSettings: settings { $0.anchor = .left; $0.fontSize = 20 }
+        wantSettings: settings {
+            $0.anchor = .left; $0.fontSize = 20
+        }
     ),
-    SettingsCase( // Test 2: Too big is clamped.
+    SettingsCase(  // Test 2: Too big is clamped.
         name: "clamp high", json: #"{"fontSize":200,"offset":9000}"#,
-        wantSettings: settings { $0.fontSize = 40; $0.offset = 600 }
+        wantSettings: settings {
+            $0.fontSize = 40; $0.offset = 600
+        }
     ),
-    SettingsCase( // Test 3: Too small is clamped.
+    SettingsCase(  // Test 3: Too small is clamped.
         name: "clamp low", json: #"{"fontSize":1,"offset":-9000}"#,
-        wantSettings: settings { $0.fontSize = 9; $0.offset = -600 }
+        wantSettings: settings {
+            $0.fontSize = 9; $0.offset = -600
+        }
     ),
-    SettingsCase( // Test 4: Partial nested style.
+    SettingsCase(  // Test 4: Partial nested style.
         name: "nested", json: #"{"style":{"use24Hour":true}}"#,
         wantSettings: settings { $0.style.use24Hour = true }
     ),
-    SettingsCase( // Test 5: Color and hidden displays.
+    SettingsCase(  // Test 5: Color and hidden displays.
         name: "color", json: #"{"color":{"red":1,"green":0.5,"blue":0,"alpha":0.8},"hiddenDisplays":["A"]}"#,
-        wantSettings: settings { $0.color = RGBA(red: 1, green: 0.5, blue: 0, alpha: 0.8); $0.hiddenDisplays = ["A"] }
+        wantSettings: settings {
+            $0.color = RGBA(red: 1, green: 0.5, blue: 0, alpha: 0.8); $0.hiddenDisplays = ["A"]
+        }
     ),
-    SettingsCase(name: "bad anchor", json: #"{"anchor":"up"}"#, wantSettings: nil), // Test 6: Unknown anchor.
-    SettingsCase(name: "not json", json: "nope", wantSettings: nil), // Test 7: Malformed.
+    SettingsCase(name: "bad anchor", json: #"{"anchor":"up"}"#, wantSettings: nil),  // Test 6: Unknown anchor.
+    SettingsCase(name: "not json", json: "nope", wantSettings: nil),  // Test 7: Malformed.
 ]
 
 // testDecode checks each saved form.

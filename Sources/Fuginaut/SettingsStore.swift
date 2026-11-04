@@ -29,7 +29,8 @@ final class SettingsStore {
     // init loads saved settings, or the defaults when none are saved or they fail to decode.
     init() {
         if let data = UserDefaults.standard.data(forKey: Self.key),
-           let saved = try? JSONDecoder().decode(Settings.self, from: data) {
+            let saved = try? JSONDecoder().decode(Settings.self, from: data)
+        {
             settings = saved
         } else {
             settings = Settings()

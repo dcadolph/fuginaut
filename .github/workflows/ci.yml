@@ -1,0 +1,50 @@
+name: ci
+
+# Lint on macos-26, which carries the Xcode that ships swift-format 6.3.0, then test and build the
+# universal app on macos-15, the release runner.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: macos-26
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      # Lint with the swift-format 6.3.0 that formatted the tree, since another version may format
+      # differently. DEVELOPER_DIR picks it, so the default Xcode of the image does not matter.
+      - name: Lint
+        run: |
+          set -euo pipefail
+          for app in /Applications/Xcode*.app; do
+            v="$(DEVELOPER_DIR="$app/Contents/Developer" xcrun swift-format --version 2>/dev/null || true)"
+            echo "$app: ${v:-no swift-format}"
+            if [ "$v" = 6.3.0 ]; then
+              DEVELOPER_DIR="$app/Contents/Developer" make lint
+              exit 0
+            fi
+          done
+          echo "no Xcode on this runner has swift-format 6.3.0"
+          exit 1
+
+  test:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Test
+        run: make test
+
+      - name: Test under the thread sanitizer
+        run: swift test --sanitize=thread -Xswiftc -warnings-as-errors
+
+      - name: Test under the address sanitizer
+        run: swift test --sanitize=address -Xswiftc -warnings-as-errors
+
+      - name: Build universal app
+        run: make zip ARCHS="arm64 x86_64"

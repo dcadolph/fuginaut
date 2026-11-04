@@ -8,6 +8,8 @@
 	<string>Fuginaut</string>
 	<key>CFBundleDisplayName</key>
 	<string>Fuginaut</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
 	<key>CFBundleExecutable</key>
 	<string>Fuginaut</string>
 	<key>CFBundlePackageType</key>

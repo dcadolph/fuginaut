@@ -28,7 +28,8 @@ struct Display {
     // uuid returns the display's stable UUID string, or its number when macOS has no UUID for it.
     private static func uuid(_ id: CGDirectDisplayID) -> String {
         guard let ref = CGDisplayCreateUUIDFromDisplayID(id)?.takeRetainedValue(),
-              let text = CFUUIDCreateString(nil, ref) as String? else {
+            let text = CFUUIDCreateString(nil, ref) as String?
+        else {
             return String(id)
         }
         return text

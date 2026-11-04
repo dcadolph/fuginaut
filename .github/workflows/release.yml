@@ -1,0 +1,265 @@
+name: release
+on:
+  release:
+    types: [published]
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v5
+      - name: Require the app version to match the tag
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          plist=Sources/Fuginaut/Info.plist
+          for key in CFBundleShortVersionString CFBundleVersion; do
+            got="$(/usr/libexec/PlistBuddy -c "Print :$key" "$plist")"
+            if [ "v$got" != "$TAG" ]; then
+              echo "::error::$key in $plist is $got but the tag is $TAG."
+              exit 1
+            fi
+          done
+      - name: Require the app icon
+        run: |
+          if [ ! -f art/app-icon.png ]; then
+            echo "::error::art/app-icon.png is missing. A release must carry the app icon."
+            exit 1
+          fi
+      - name: Test
+        run: make test
+      - name: Require signing secrets
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          NOTARY_KEY_P8: ${{ secrets.NOTARY_KEY_P8 }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+        run: |
+          for name in MACOS_CERT_P12 MACOS_CERT_PASSWORD NOTARY_KEY_P8 NOTARY_KEY_ID NOTARY_ISSUER_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Secret $name is not set. A release must be signed and notarized."
+              exit 1
+            fi
+          done
+      - name: Import signing certificate
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          set -euo pipefail
+          keychain="$RUNNER_TEMP/signing.keychain-db"
+          keychain_password="$(uuidgen)"
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 3600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+          echo "$MACOS_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$keychain" -P "$MACOS_CERT_PASSWORD" \
+            -T /usr/bin/codesign
+          rm -f "$RUNNER_TEMP/cert.p12"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keychain_password" "$keychain"
+          security list-keychains -d user -s "$keychain" login.keychain-db
+      - name: Build universal app
+        env:
+          SIGN_ID: "Developer ID Application: Douglas Adolph (U7L4P2YHWJ)"
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          make zip ARCHS="arm64 x86_64" SIGN_ID="$SIGN_ID" ZIP="dist/fuginaut_${TAG}_macos_universal.zip"
+          codesign -dv .build/Fuginaut.app 2>&1 | grep -q "TeamIdentifier=U7L4P2YHWJ"
+      - name: Notarize and staple
+        env:
+          NOTARY_KEY_P8: ${{ secrets.NOTARY_KEY_P8 }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          zip="dist/fuginaut_${TAG}_macos_universal.zip"
+          key="$RUNNER_TEMP/notary.p8"
+          printf '%s' "$NOTARY_KEY_P8" > "$key"
+          xcrun notarytool submit "$zip" --key "$key" --key-id "$NOTARY_KEY_ID" \
+            --issuer "$NOTARY_ISSUER_ID" --wait --timeout 90m --output-format json > "$RUNNER_TEMP/notary.json"
+          rm -f "$key"
+          cat "$RUNNER_TEMP/notary.json"
+          test "$(jq -r .status "$RUNNER_TEMP/notary.json")" = "Accepted"
+          # Apple's ticket service drops connections now and then, so retry before failing.
+          for try in 1 2 3; do
+            xcrun stapler staple .build/Fuginaut.app && break
+            test "$try" -lt 3
+            sleep 20
+          done
+          rm -f "$zip"
+          ditto -c -k --keepParent .build/Fuginaut.app "$zip"
+      - name: Build, notarize and staple the disk image
+        env:
+          NOTARY_KEY_P8: ${{ secrets.NOTARY_KEY_P8 }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+          SIGN_ID: "Developer ID Application: Douglas Adolph (U7L4P2YHWJ)"
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/dmgbuild"
+          "$RUNNER_TEMP/dmgbuild/bin/pip" install --quiet dmgbuild==1.6.6
+          dmg="dist/fuginaut_${TAG}_macos_universal.dmg"
+          make dmg DMGBUILD="$RUNNER_TEMP/dmgbuild/bin/dmgbuild" DMG="$dmg" SIGN_ID="$SIGN_ID"
+          codesign -dv "$dmg" 2>&1 | grep -q "TeamIdentifier=U7L4P2YHWJ"
+          key="$RUNNER_TEMP/notary.p8"
+          printf '%s' "$NOTARY_KEY_P8" > "$key"
+          xcrun notarytool submit "$dmg" --key "$key" --key-id "$NOTARY_KEY_ID" \
+            --issuer "$NOTARY_ISSUER_ID" --wait --timeout 180m --output-format json > "$RUNNER_TEMP/notary-dmg.json"
+          rm -f "$key"
+          cat "$RUNNER_TEMP/notary-dmg.json"
+          test "$(jq -r .status "$RUNNER_TEMP/notary-dmg.json")" = "Accepted"
+          # Apple's ticket service drops connections now and then, so retry before failing.
+          for try in 1 2 3; do
+            xcrun stapler staple "$dmg" && break
+            test "$try" -lt 3
+            sleep 20
+          done
+      - name: Verify as a user would
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          check="$RUNNER_TEMP/verify"
+          mkdir -p "$check"
+          ditto -x -k "dist/fuginaut_${TAG}_macos_universal.zip" "$check"
+          # Apple's ticket service drops connections now and then, so retry before failing.
+          for try in 1 2 3; do
+            xcrun stapler validate "$check/Fuginaut.app" && break
+            test "$try" -lt 3
+            sleep 20
+          done
+          spctl --assess --type execute --verbose=4 "$check/Fuginaut.app"
+          codesign --verify --deep --strict --verbose=2 "$check/Fuginaut.app"
+          dmg="dist/fuginaut_${TAG}_macos_universal.dmg"
+          for try in 1 2 3; do
+            xcrun stapler validate "$dmg" && break
+            test "$try" -lt 3
+            sleep 20
+          done
+          spctl --assess --type open --context context:primary-signature --verbose=4 "$dmg"
+          mount="$RUNNER_TEMP/dmg-mount"
+          hdiutil attach -nobrowse -readonly -mountpoint "$mount" "$dmg"
+          spctl --assess --type execute --verbose=4 "$mount/Fuginaut.app"
+          test "$(readlink "$mount/Applications")" = "/Applications"
+          test -f "$mount/.DS_Store"
+          hdiutil detach "$mount"
+          cd dist
+          # Fixed names let releases/latest/download/fuginaut_macos_universal.{zip,dmg} always work.
+          cp -- "fuginaut_${TAG}_macos_universal.zip" fuginaut_macos_universal.zip
+          cp -- "fuginaut_${TAG}_macos_universal.dmg" fuginaut_macos_universal.dmg
+          shasum -a 256 -- *.zip *.dmg > SHA256SUMS
+      - name: Remove signing keychain
+        if: always()
+        run: security delete-keychain "$RUNNER_TEMP/signing.keychain-db" || true
+
+      - uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3
+
+      # One keyless signature over SHA256SUMS covers the zip and the disk image through their
+      # checksums. It is verified at once with the identity check a downloader would run.
+      - name: Sign the checksums
+        working-directory: dist
+        run: |
+          set -euo pipefail
+          cosign sign-blob --yes SHA256SUMS --output-signature SHA256SUMS.sig --output-certificate SHA256SUMS.pem
+          cosign verify-blob SHA256SUMS --signature SHA256SUMS.sig --certificate SHA256SUMS.pem \
+            --certificate-identity-regexp '^https://github.com/dcadolph/fuginaut/\.github/workflows/release\.yml@refs/tags/v' \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com
+          shasum -a 256 -c SHA256SUMS
+
+      # SLSA build provenance for the zip and the disk image, checkable with gh attestation verify.
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2
+        with:
+          subject-path: |
+            dist/*.zip
+            dist/*.dmg
+      - name: Attach to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+  tap:
+    needs: build
+    runs-on: ubuntu-24.04
+    env:
+      TAG: ${{ github.event.release.tag_name }}
+      TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Write the cask into the tap
+        run: |
+          set -euo pipefail
+          if [ -z "${TAP_TOKEN:-}" ]; then
+            echo "::error::HOMEBREW_TAP_TOKEN is not set on this repository"
+            exit 1
+          fi
+          VER="${TAG#v}"
+          zip="fuginaut_${TAG}_macos_universal.zip"
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "$zip"
+          sha="$(sha256sum "$zip" | cut -d' ' -f1)"
+          git clone "https://x-access-token:${TAP_TOKEN}@github.com/dcadolph/homebrew-tap.git" tap
+          cat > tap/Casks/fuginaut.rb <<EOF
+          cask "fuginaut" do
+            version "${VER}"
+            sha256 "${sha}"
+
+            url "https://github.com/dcadolph/fuginaut/releases/download/v#{version}/fuginaut_v#{version}_macos_universal.zip"
+            name "Fuginaut"
+            desc "Second clock at the center or left of the menu bar"
+            homepage "https://github.com/dcadolph/fuginaut"
+
+            livecheck do
+              url :url
+              strategy :github_latest
+            end
+
+            depends_on macos: :sonoma
+
+            app "Fuginaut.app"
+
+            uninstall quit: "com.dcadolph.fuginaut"
+
+            zap trash: "~/Library/Preferences/com.dcadolph.fuginaut.plist"
+          end
+          EOF
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/fuginaut.rb
+          # A re-run of a tag that already shipped writes the same cask and has nothing to push.
+          if git diff --cached --quiet; then
+            echo "the cask already holds ${VER}; nothing to bump"
+            exit 0
+          fi
+          git commit -m "Update fuginaut to ${VER}"
+          git push
+
+  verify:
+    needs: tap
+    runs-on: macos-15
+    steps:
+      - name: Install from the tap and check it as a user would
+        env:
+          # The online audit calls the GitHub API, which rate limits shared runners without a token.
+          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          brew tap dcadolph/tap
+          brew install --cask dcadolph/tap/fuginaut
+          spctl --assess --type execute --verbose=4 /Applications/Fuginaut.app
+          # Apple's ticket service drops connections now and then, so retry before failing.
+          for try in 1 2 3; do
+            xcrun stapler validate /Applications/Fuginaut.app && break
+            test "$try" -lt 3
+            sleep 20
+          done
+          brew audit --cask --strict --online dcadolph/tap/fuginaut
+          brew uninstall --cask fuginaut
