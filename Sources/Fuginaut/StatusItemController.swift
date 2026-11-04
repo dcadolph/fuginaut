@@ -13,9 +13,7 @@ final class StatusItemController: NSObject {
         self.openSettings = openSettings
         item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         super.init()
-        let image = NSImage(systemSymbolName: "hourglass", accessibilityDescription: "Fuginaut")
-        image?.isTemplate = true
-        item.button?.image = image
+        item.button?.image = EclipseGlyph.image()
         let menu = NSMenu()
         let settings = NSMenuItem(title: "Settings…", action: #selector(settingsChosen), keyEquivalent: ",")
         settings.target = self
