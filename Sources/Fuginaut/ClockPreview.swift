@@ -57,11 +57,14 @@ struct ClockPreview: View {
         }
     }
 
-    // wallpaper is a flat two-tone split on a hard diagonal, like a skate shop sign: pool blue over sun
-    // yellow for the light bar, deep teal over burnt orange for the dark one.
+    // wallpaper is a flat two-tone split on a hard diagonal in the astronaut's suit cream and space black:
+    // black over cream for the dark bar, cream over black for the light one, so the translucent bar keeps
+    // its own tone.
     private var wallpaper: some View {
-        let top = dark ? Color(red: 0.05, green: 0.23, blue: 0.26) : Color(red: 0.25, green: 0.65, blue: 0.79)
-        let bottom = dark ? Color(red: 0.78, green: 0.31, blue: 0.16) : Color(red: 0.96, green: 0.78, blue: 0.27)
+        let cream = Color(red: 0.96, green: 0.94, blue: 0.90)
+        let space = Color(red: 0.04, green: 0.04, blue: 0.05)
+        let top = dark ? space : cream
+        let bottom = dark ? cream : space
         return ZStack {
             top
             DiagonalSplit().fill(bottom)

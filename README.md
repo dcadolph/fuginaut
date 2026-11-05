@@ -18,7 +18,7 @@ The clock is meant for big screens. While an external display is connected, a la
 starts with the clock off, and you can turn it on from General. A laptop on its own shows the
 clock. On a screen with a notch, the clock slides beside the notch instead of hiding under it.
 
-<p align="center"><img src="art/settings.png" width="540" alt="The settings window with a live preview of the menu bar over a blue and yellow two-tone, and the Size tab with size, weight, and nudge"></p>
+<p align="center"><img src="art/settings.png" width="540" alt="The settings window with a live preview of the menu bar over a cream and black two-tone, and the Size tab with size, weight, and nudge"></p>
 
 ## Settings
 
