@@ -46,6 +46,7 @@ app: $(if $(ICON_DEP),$(ICNS))
 	cp "$$(swift build -c release $(ARCH_FLAGS) --show-bin-path)/Fuginaut" $(APP)/Contents/MacOS/Fuginaut
 	cp Sources/Fuginaut/Info.plist $(APP)/Contents/Info.plist
 	$(if $(ICON_DEP),cp $(ICNS) $(APP)/Contents/Resources/AppIcon.icns)
+	cp art/astronaut.png $(APP)/Contents/Resources/Astronaut.png
 	codesign --force --options runtime $(TIMESTAMP) --sign "$(SIGN_ID)" $(APP)
 
 zip: app

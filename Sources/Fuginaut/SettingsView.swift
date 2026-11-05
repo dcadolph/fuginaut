@@ -47,6 +47,8 @@ struct SettingsView: View {
     @State var previewDark: Bool?
     // previewDate pins the preview's time, for stills. Nil shows the live time.
     var previewDate: Date?
+    // astronaut is the header art, loaded from the app bundle.
+    var astronaut: NSImage? = AstronautHeader.bundled()
 
     // colorScheme is the window's appearance, which the preview follows until flipped.
     @Environment(\.colorScheme) private var colorScheme
@@ -64,9 +66,10 @@ struct SettingsView: View {
         string: "https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table"
     )
 
-    // body lays out the preview, the tab strip, and the current page.
+    // body lays out the astronaut header, the preview, the tab strip, and the current page.
     var body: some View {
         VStack(spacing: 0) {
+            AstronautHeader(astronaut: astronaut)
             ClockPreview(settings: store.settings, dark: dark, date: previewDate)
                 .padding([.horizontal, .top], 16)
             tabStrip
