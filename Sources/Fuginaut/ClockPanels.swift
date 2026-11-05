@@ -15,10 +15,13 @@ final class ClockPanels: NSObject {
     private var text = ""
     // timer fires on each whole second.
     private var timer: Timer?
+    // openSettings opens the settings window when a clock is clicked.
+    private let openSettings: () -> Void
 
     // init starts the clock and follows display, space, and settings changes.
-    init(store: SettingsStore) {
+    init(store: SettingsStore, openSettings: @escaping () -> Void) {
         self.store = store
+        self.openSettings = openSettings
         formatter = ClockFormatter(style: store.settings.style)
         super.init()
         NotificationCenter.default.addObserver(
@@ -84,7 +87,7 @@ final class ClockPanels: NSObject {
 
     // makePanel builds and records a styled panel for a display.
     private func makePanel(_ id: CGDirectDisplayID) -> ClockPanel {
-        let panel = ClockPanel()
+        let panel = ClockPanel(onClick: openSettings)
         panel.apply(store.settings)
         panels[id] = panel
         return panel
@@ -101,8 +104,8 @@ final class ClockPanel: NSPanel {
     // settings is the look last applied.
     private var settings = Settings()
 
-    // init builds the panel at status bar level on every space.
-    init() {
+    // init builds the panel at status bar level on every space. onClick runs when the clock is clicked.
+    init(onClick: @escaping () -> Void) {
         super.init(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         isOpaque = false
         backgroundColor = .clear
@@ -110,7 +113,7 @@ final class ClockPanel: NSPanel {
         ignoresMouseEvents = true
         level = .statusBar
         isReleasedWhenClosed = false
-        let content = NSView()
+        let content = ClickView(onClick: onClick)
         content.addSubview(pill)
         content.addSubview(label)
         contentView = content
@@ -137,6 +140,7 @@ final class ClockPanel: NSPanel {
         }
         pill.color = ClockLook.dynamicBacking(settings).withAlphaComponent(ClockLook.pillAlpha)
         pill.isHidden = settings.backing != .pill
+        ignoresMouseEvents = !settings.clickOpensSettings
         var behavior: NSWindow.CollectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
         if settings.showWhenBarHidden {
             behavior.insert(.fullScreenAuxiliary)
@@ -198,5 +202,38 @@ final class PillView: NSView {
     override func layout() {
         super.layout()
         needsDisplay = true
+    }
+}
+
+// ClickView is the clock panel's content. It takes every click inside the panel, including the first one
+// while another app is active, and reports it.
+final class ClickView: NSView {
+    // onClick runs on each click.
+    private let onClick: () -> Void
+
+    // init builds the view with the click handler.
+    init(onClick: @escaping () -> Void) {
+        self.onClick = onClick
+        super.init(frame: .zero)
+    }
+
+    // init is not supported, since the view is only built in code.
+    required init?(coder: NSCoder) {
+        nil
+    }
+
+    // hitTest claims every point inside the view, so the text and pill never take the click.
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        frame.contains(point) ? self : nil
+    }
+
+    // acceptsFirstMouse lets the first click act without first activating Fuginaut.
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+        true
+    }
+
+    // mouseUp reports the click once the button is released.
+    override func mouseUp(with event: NSEvent) {
+        onClick()
     }
 }

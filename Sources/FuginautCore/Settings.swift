@@ -100,6 +100,8 @@ public struct Settings: Codable, Equatable, Sendable {
     public var showWhenBarHidden = false
     // showMenuIcon shows the menu bar icon that opens settings.
     public var showMenuIcon = true
+    // clickOpensSettings opens settings when the clock is clicked. When false, clicks pass through the clock.
+    public var clickOpensSettings = true
 
     // init builds the default settings.
     public init() {}
@@ -119,6 +121,7 @@ public struct Settings: Codable, Equatable, Sendable {
         displays = try c.decodeIfPresent([String: Bool].self, forKey: .displays) ?? d.displays
         showWhenBarHidden = try c.decodeIfPresent(Bool.self, forKey: .showWhenBarHidden) ?? d.showWhenBarHidden
         showMenuIcon = try c.decodeIfPresent(Bool.self, forKey: .showMenuIcon) ?? d.showMenuIcon
+        clickOpensSettings = try c.decodeIfPresent(Bool.self, forKey: .clickOpensSettings) ?? d.clickOpensSettings
         offset = min(Self.offsets.upperBound, max(Self.offsets.lowerBound, offset))
         fontSize = min(Self.fontSizes.upperBound, max(Self.fontSizes.lowerBound, fontSize))
     }

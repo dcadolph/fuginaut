@@ -12,7 +12,7 @@
 
 On a wide monitor, Apple's clock sits in the far right corner, a long way from where you are
 looking. Fuginaut puts a second clock at the center of the menu bar on every display, where a
-glance finds it. It ignores the mouse, so clicks pass straight through to whatever is underneath.
+glance finds it. Click it to open settings, or turn that off so clicks pass straight through.
 
 The clock is meant for big screens. While an external display is connected, a laptop's own screen
 starts with the clock off, and you can turn it on from General. A laptop on its own shows the
@@ -22,16 +22,16 @@ clock. On a screen with a notch, the clock slides beside the notch instead of hi
 
 ## Settings
 
-Click the eclipse in the menu bar to open settings. Every change shows in the live preview at the
-top and on the real clock right away.
+Click the clock or the eclipse in the menu bar to open settings. Every change shows in the live
+preview at the top and on the real clock right away.
 
 - **Size:** how big and how heavy the clock reads, and a nudge off the center of the bar.
 - **Text:** the font (System, Rounded, Mono, Serif, or any installed family), all caps, color,
   and a backing of a shadow or a pill to keep it readable over busy wallpaper.
 - **Format:** short, long, numeric, ISO, or a custom date pattern, with switches for the weekday,
   date, 24-hour time, and seconds, plus an optional second time zone.
-- **General:** which displays show the clock, whether it stays up in full screen apps, the menu
-  bar icon, and opening at login.
+- **General:** which displays show the clock, whether clicking it opens settings or passes
+  through, whether it stays up in full screen apps, the menu bar icon, and opening at login.
 
 Fuginaut asks for no permissions and sends nothing anywhere.
 

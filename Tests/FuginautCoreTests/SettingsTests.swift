@@ -45,8 +45,10 @@ let settingsCases: [SettingsCase] = [
         }
     ),
     SettingsCase(  // Test 4: Partial nested style.
-        name: "nested", json: #"{"style":{"use24Hour":true}}"#,
-        wantSettings: settings { $0.style.use24Hour = true }
+        name: "nested", json: #"{"style":{"use24Hour":true},"clickOpensSettings":false}"#,
+        wantSettings: settings {
+            $0.style.use24Hour = true; $0.clickOpensSettings = false
+        }
     ),
     SettingsCase(  // Test 5: Color and display choices.
         name: "color", json: #"{"color":{"red":1,"green":0.5,"blue":0,"alpha":0.8},"displays":{"A":false}}"#,
@@ -95,6 +97,7 @@ func testRoundTrip() throws {
         $0.displays = ["X": false, "Y": true]
         $0.showWhenBarHidden = true
         $0.showMenuIcon = false
+        $0.clickOpensSettings = false
     }
     let got = try JSONDecoder().decode(Settings.self, from: JSONEncoder().encode(want))
     #expect(got == want)

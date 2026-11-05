@@ -18,7 +18,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // applicationDidFinishLaunching draws the clock and adds the menu bar icon.
     func applicationDidFinishLaunching(_ notification: Notification) {
         loginItem.configureOnFirstLaunch()
-        clock = ClockPanels(store: store)
+        clock = ClockPanels(store: store) { [weak self] in
+            self?.showSettings()
+        }
         statusItem = StatusItemController(store: store) { [weak self] in
             self?.showSettings()
         }

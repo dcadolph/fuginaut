@@ -350,10 +350,11 @@ struct SettingsView: View {
                 Toggle("Show when the menu bar hides", isOn: $store.settings.showWhenBarHidden).labelsHidden()
             }
             RowDivider()
-            Row(
-                "Show menu bar icon",
-                detail: store.settings.showMenuIcon ? nil : "Open Fuginaut again from Applications to get back here."
-            ) {
+            Row("Click the clock to open settings", detail: "When off, clicks pass through the clock.") {
+                Toggle("Click the clock to open settings", isOn: $store.settings.clickOpensSettings).labelsHidden()
+            }
+            RowDivider()
+            Row("Show menu bar icon", detail: menuIconDetail) {
                 Toggle("Show menu bar icon", isOn: $store.settings.showMenuIcon).labelsHidden()
             }
             RowDivider()
@@ -378,6 +379,16 @@ struct SettingsView: View {
         }
         .controlSize(.regular)
         .padding(.horizontal, 4)
+    }
+
+    // menuIconDetail tells how to get back to settings once the menu bar icon is hidden.
+    private var menuIconDetail: String? {
+        guard !store.settings.showMenuIcon else {
+            return nil
+        }
+        return store.settings.clickOpensSettings
+            ? "Click the clock to get back here."
+            : "Open Fuginaut again from Applications to get back here."
     }
 
     // loginDetail explains a login item that needs approval or failed to change.
