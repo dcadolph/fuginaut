@@ -1,4 +1,4 @@
-<p align="center"><img src="art/banner.svg" width="100%" alt="An astronaut floating in space with an eclipse in the visor"></p>
+<p align="center"><img src="art/banner.svg" width="100%" alt="An astronaut floating in space with an eclipse in the visor, holding an hourglass"></p>
 
 <h1 align="center">Fuginaut</h1>
 
