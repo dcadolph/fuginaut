@@ -1,4 +1,4 @@
-<p align="center"><img src="art/app-icon.png" width="128" alt="The Fuginaut icon, an orange eclipse ring on navy"></p>
+<p align="center"><img src="art/banner.svg" width="100%" alt="An astronaut floating in space with an eclipse in the visor"></p>
 
 <h1 align="center">Fuginaut</h1>
 
