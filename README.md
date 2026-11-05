@@ -18,16 +18,19 @@ The clock is meant for big screens. While an external display is connected, a la
 starts with the clock off, and you can turn it on from General. A laptop on its own shows the
 clock. On a screen with a notch, the clock slides beside the notch instead of hiding under it.
 
-<p align="center"><img src="art/settings.png" width="540" alt="The settings window with a live preview of the menu bar over a cream and black two-tone, and the Size tab with size, weight, and nudge"></p>
+<p align="center"><img src="art/settings.png" width="540" alt="The settings window with a live preview of the menu bar over a cream and black two-tone, and the Color tab with swatches, a hex field, and the color wheel"></p>
 
 ## Settings
 
 Click the clock or the eclipse in the menu bar to open settings. Every change shows in the live
 preview at the top and on the real clock right away.
 
-- **Size:** how big and how heavy the clock reads, and a nudge off the center of the bar.
-- **Text:** the font (System, Rounded, Mono, Serif, or any installed family), all caps, color,
-  and a backing of a shadow or a pill to keep it readable over busy wallpaper.
+- **Size:** how big the clock reads, and a nudge off the center of the bar.
+- **Text:** the font (System, Rounded, Mono, Serif, or any installed family), its weight, and
+  all caps.
+- **Color:** the clock's color, matched to the menu bar or picked from a grid of swatches, a hex
+  value, or the color wheel. A shadow or a pill behind the text keeps it readable over busy
+  wallpaper, in a color that contrasts on its own or one you pick the same three ways.
 - **Format:** short, long, numeric, ISO, or a custom date pattern, with switches for the weekday,
   date, 24-hour time, and seconds, plus an optional second time zone.
 - **General:** which displays show the clock, whether clicking it opens settings or passes

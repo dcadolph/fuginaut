@@ -37,8 +37,10 @@ enum Stills {
         for tab in SettingsTab.allCases {
             looks[tab] = FuginautCore.Settings()
         }
-        looks[.text]?.backing = .pill
         looks[.text]?.fontDesign = .rounded
+        looks[.color]?.color = RGBA(hex: "#FFAD1A")
+        looks[.color]?.backing = .pill
+        looks[.color]?.backingColor = RGBA(hex: "#1E3A5F")
         looks[.format]?.style.dateStyle = .custom
         looks[.format]?.style.secondZone = "Asia/Tokyo"
         looks[.format]?.style.secondZoneLabel = "TYO"

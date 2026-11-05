@@ -7,6 +7,7 @@ import FuginautCore
 enum SettingsTab: String, CaseIterable, Identifiable {
     case size
     case text
+    case color
     case format
     case general
 
@@ -18,6 +19,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         switch self {
         case .size: "Size"
         case .text: "Text"
+        case .color: "Color"
         case .format: "Format"
         case .general: "General"
         }
@@ -28,6 +30,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         switch self {
         case .size: "textformat.size"
         case .text: "textformat"
+        case .color: "paintpalette"
         case .format: "calendar.badge.clock"
         case .general: "gearshape"
         }
@@ -136,7 +139,9 @@ struct SettingsView: View {
             positionCard
         case .text:
             typefaceCard
-            colorCard
+        case .color:
+            textColorCard
+            backingCard
         case .format:
             dayCard
             secondTimeCard
@@ -147,7 +152,7 @@ struct SettingsView: View {
         }
     }
 
-    // sizeCard holds how big and how heavy the clock reads.
+    // sizeCard holds how big the clock reads.
     private var sizeCard: some View {
         Card("Size") {
             Row("Size") {
@@ -159,18 +164,6 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                         .frame(width: 44, alignment: .trailing)
                 }
-            }
-            RowDivider()
-            Row("Weight") {
-                Picker("Weight", selection: $store.settings.weight) {
-                    Text("Regular").tag(Weight.regular)
-                    Text("Medium").tag(Weight.medium)
-                    Text("Semibold").tag(Weight.semibold)
-                    Text("Bold").tag(Weight.bold)
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .frame(width: 280)
             }
         }
     }
@@ -211,7 +204,7 @@ struct SettingsView: View {
         }
     }
 
-    // typefaceCard holds the font and capitals.
+    // typefaceCard holds the font, its weight, and capitals.
     private var typefaceCard: some View {
         Card("Typeface") {
             Row("Font") {
@@ -229,27 +222,43 @@ struct SettingsView: View {
                 .frame(width: 200)
             }
             RowDivider()
+            Row("Weight") {
+                Picker("Weight", selection: $store.settings.weight) {
+                    Text("Regular").tag(Weight.regular)
+                    Text("Medium").tag(Weight.medium)
+                    Text("Semibold").tag(Weight.semibold)
+                    Text("Bold").tag(Weight.bold)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(width: 280)
+            }
+            RowDivider()
             Row("All caps") {
                 Toggle("All caps", isOn: $store.settings.style.uppercase).labelsHidden()
             }
         }
     }
 
-    // colorCard holds the text color and the backing.
-    private var colorCard: some View {
-        Card("Color") {
-            Row("Match the menu bar", detail: "Follows light and dark menu bars on its own.") {
+    // textColorCard holds the clock's color: automatic, or picked from the swatches, a hex value, or the wheel.
+    private var textColorCard: some View {
+        Card("Text color") {
+            Row(
+                "Match the menu bar",
+                detail: "White on dark menu bars and black on light ones. Pick a color to turn off."
+            ) {
                 Toggle("Match the menu bar", isOn: matchSystem).labelsHidden()
             }
-            if store.settings.color != nil {
-                RowDivider()
-                Row("Color") {
-                    ColorPicker("Color", selection: color, supportsOpacity: true).labelsHidden()
-                }
-            }
             RowDivider()
-            Row("Backing", detail: "Keeps the text readable over busy wallpaper.") {
-                Picker("Backing", selection: $store.settings.backing) {
+            ColorChooser(color: $store.settings.color, fallback: RGBA(red: 1, green: 1, blue: 1))
+        }
+    }
+
+    // backingCard holds the shadow or pill behind the text and its color.
+    private var backingCard: some View {
+        Card("Backing") {
+            Row("Style", detail: "Keeps the text readable over busy wallpaper.") {
+                Picker("Style", selection: $store.settings.backing) {
                     Text("None").tag(Backing.none)
                     Text("Shadow").tag(Backing.shadow)
                     Text("Pill").tag(Backing.pill)
@@ -257,6 +266,14 @@ struct SettingsView: View {
                 .pickerStyle(.segmented)
                 .labelsHidden()
                 .frame(width: 190)
+            }
+            if store.settings.backing != .none {
+                RowDivider()
+                Row("Automatic color", detail: "The opposite of the text color. Pick one to stand out on any bar.") {
+                    Toggle("Automatic color", isOn: automaticBacking).labelsHidden()
+                }
+                RowDivider()
+                ColorChooser(color: $store.settings.backingColor, fallback: RGBA(red: 0, green: 0, blue: 0))
             }
         }
     }
@@ -471,7 +488,7 @@ struct SettingsView: View {
         }
     }
 
-    // matchSystem binds the switch to whether the color follows the system.
+    // matchSystem binds the switch to whether the color follows the system. Turning it off starts from white.
     private var matchSystem: Binding<Bool> {
         Binding {
             store.settings.color == nil
@@ -480,18 +497,15 @@ struct SettingsView: View {
         }
     }
 
-    // color binds the color picker to the stored sRGB color.
-    private var color: Binding<Color> {
+    // automaticBacking binds the switch to whether the backing contrasts on its own. Turning it off starts from
+    // the automatic color at full strength.
+    private var automaticBacking: Binding<Bool> {
         Binding {
-            let c = store.settings.color ?? RGBA(red: 1, green: 1, blue: 1)
-            return Color(.sRGB, red: c.red, green: c.green, blue: c.blue, opacity: c.alpha)
-        } set: { picked in
-            guard let c = NSColor(picked).usingColorSpace(.sRGB) else {
-                return
-            }
-            store.settings.color = RGBA(
-                red: c.redComponent, green: c.greenComponent, blue: c.blueComponent, alpha: c.alphaComponent
-            )
+            store.settings.backingColor == nil
+        } set: { on in
+            let light = store.settings.color?.isLight ?? true
+            store.settings.backingColor =
+                on ? nil : (light ? RGBA(red: 0, green: 0, blue: 0) : RGBA(red: 1, green: 1, blue: 1))
         }
     }
 
