@@ -26,9 +26,9 @@ public enum FontDesign: String, Codable, CaseIterable, Sendable {
 public enum Backing: String, Codable, CaseIterable, Sendable {
     // none draws the text alone.
     case none
-    // shadow draws a soft glow in the contrasting color behind the text.
+    // shadow draws a soft glow in the backing color behind the text.
     case shadow
-    // pill draws a rounded capsule in the contrasting color behind the text.
+    // pill draws a rounded capsule in the backing color behind the text.
     case pill
 }
 
@@ -64,6 +64,51 @@ public struct RGBA: Codable, Equatable, Sendable {
         luminance > 0.179
     }
 
+    // init parses a hex color: RGB, RRGGBB, or RRGGBBAA, with or without a leading #, in either case. It
+    // returns nil for anything else.
+    public init?(hex: String) {
+        var digits = hex.trimmingCharacters(in: .whitespaces)
+        if digits.hasPrefix("#") {
+            digits.removeFirst()
+        }
+        guard [3, 6, 8].contains(digits.count), digits.allSatisfy(\.isHexDigit) else {
+            return nil
+        }
+        if digits.count == 3 {
+            digits = digits.map { "\($0)\($0)" }.joined()
+        }
+        if digits.count == 6 {
+            digits += "FF"
+        }
+        guard let value = UInt32(digits, radix: 16) else {
+            return nil
+        }
+        func byte(_ shift: UInt32) -> Double {
+            Double((value >> shift) & 0xFF) / 255
+        }
+        self.init(red: byte(24), green: byte(16), blue: byte(8), alpha: byte(0))
+    }
+
+    // hex formats the color as #RRGGBB, or #RRGGBBAA when it is not fully opaque.
+    public var hex: String {
+        func byte(_ c: Double) -> String {
+            String(format: "%02X", Int((c * 255).rounded()))
+        }
+        let rgb = "#" + byte(red) + byte(green) + byte(blue)
+        return alpha < 1 ? rgb + byte(alpha) : rgb
+    }
+
+    // swatchHexes lists the color grid in settings, two rows of twelve.
+    public static let swatchHexes = [
+        "#FFFFFF", "#F5EBD1", "#FFAD1A", "#FFD60A", "#FF9F0A", "#FF453A",
+        "#FF375F", "#BF5AF2", "#5E5CE6", "#0A84FF", "#64D2FF", "#30D158",
+        "#000000", "#3A3A3C", "#8E8E93", "#C7C7CC", "#A8E6CF", "#B5D8FF",
+        "#D7C4F2", "#FFC2D1", "#FFD8B1", "#8B5E3C", "#1E3A5F", "#7A1F2B",
+    ]
+
+    // swatches is the color grid in settings.
+    public static let swatches = swatchHexes.compactMap(RGBA.init(hex:))
+
     // clamp limits a component to the 0 to 1 range.
     private static func clamp(_ v: Double) -> Double {
         min(1, max(0, v))
@@ -91,6 +136,8 @@ public struct Settings: Codable, Equatable, Sendable {
     public var backing: Backing = .none
     // color is the clock's color, or nil to follow the system's text color.
     public var color: RGBA?
+    // backingColor is the shadow or pill color, or nil to contrast with the text on its own.
+    public var backingColor: RGBA?
     // style chooses what the clock text shows.
     public var style = ClockStyle()
     // displays holds the user's choice to show or hide the clock, keyed by display UUID. Displays without a
@@ -117,6 +164,7 @@ public struct Settings: Codable, Equatable, Sendable {
         fontFamily = try c.decodeIfPresent(String.self, forKey: .fontFamily) ?? d.fontFamily
         backing = try c.decodeIfPresent(Backing.self, forKey: .backing) ?? d.backing
         color = try c.decodeIfPresent(RGBA.self, forKey: .color)
+        backingColor = try c.decodeIfPresent(RGBA.self, forKey: .backingColor)
         style = try c.decodeIfPresent(ClockStyle.self, forKey: .style) ?? d.style
         displays = try c.decodeIfPresent([String: Bool].self, forKey: .displays) ?? d.displays
         showWhenBarHidden = try c.decodeIfPresent(Bool.self, forKey: .showWhenBarHidden) ?? d.showWhenBarHidden

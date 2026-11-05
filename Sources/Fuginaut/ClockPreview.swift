@@ -138,11 +138,15 @@ struct ClockPreview: View {
         let textRect = CGRect(x: Placement.padding, y: textBottom, width: size.width, height: size.height)
         let pill = Placement.pill(panel: CGRect(origin: .zero, size: panel.size), text: textRect)
         let textColor = Color(nsColor: ClockLook.textColor(settings, dark: dark))
-        let backing = Color(nsColor: ClockLook.backingColor(settings, dark: dark))
+        let pillColor = Color(
+            nsColor: ClockLook.backingColor(settings, dark: dark, automaticAlpha: ClockLook.pillAlpha))
+        let shadowColor = Color(
+            nsColor: ClockLook.backingColor(settings, dark: dark, automaticAlpha: ClockLook.shadowAlpha)
+        )
         return ZStack(alignment: .topLeading) {
             if settings.backing == .pill {
                 Capsule()
-                    .fill(backing.opacity(ClockLook.pillAlpha))
+                    .fill(pillColor)
                     .frame(width: pill.width, height: pill.height)
                     .offset(x: pill.minX, y: panel.height - pill.maxY)
             }
@@ -151,7 +155,7 @@ struct ClockPreview: View {
                 .foregroundStyle(textColor)
                 .fixedSize()
                 .shadow(
-                    color: settings.backing == .shadow ? backing.opacity(ClockLook.shadowAlpha) : .clear,
+                    color: settings.backing == .shadow ? shadowColor : .clear,
                     radius: ClockLook.shadowBlur / 2
                 )
                 .offset(x: textRect.minX, y: panel.height - textRect.maxY)

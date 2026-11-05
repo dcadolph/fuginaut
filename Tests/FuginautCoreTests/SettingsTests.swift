@@ -65,9 +65,15 @@ let settingsCases: [SettingsCase] = [
             $0.style.dateStyle = .iso; $0.style.uppercase = true
         }
     ),
-    SettingsCase(name: "bad backing", json: #"{"backing":"glow"}"#, wantSettings: nil),  // Test 7: Unknown backing.
-    SettingsCase(name: "bad weight", json: #"{"weight":"heavy"}"#, wantSettings: nil),  // Test 8: Unknown weight.
-    SettingsCase(name: "not json", json: "nope", wantSettings: nil),  // Test 9: Malformed.
+    SettingsCase(  // Test 7: Backing color.
+        name: "backing color", json: #"{"backing":"pill","backingColor":{"red":0,"green":0,"blue":1,"alpha":1}}"#,
+        wantSettings: settings {
+            $0.backing = .pill; $0.backingColor = RGBA(red: 0, green: 0, blue: 1)
+        }
+    ),
+    SettingsCase(name: "bad backing", json: #"{"backing":"glow"}"#, wantSettings: nil),  // Test 8: Unknown backing.
+    SettingsCase(name: "bad weight", json: #"{"weight":"heavy"}"#, wantSettings: nil),  // Test 9: Unknown weight.
+    SettingsCase(name: "not json", json: "nope", wantSettings: nil),  // Test 10: Malformed.
 ]
 
 // testDecode checks each saved form.
@@ -88,6 +94,7 @@ func testRoundTrip() throws {
         $0.fontFamily = "Menlo"
         $0.backing = .shadow
         $0.color = RGBA(red: 0.2, green: 0.4, blue: 0.6, alpha: 1)
+        $0.backingColor = RGBA(red: 0.9, green: 0.1, blue: 0.3, alpha: 0.5)
         $0.style.showSeconds = true
         $0.style.secondZone = "Europe/London"
         $0.style.secondZoneLabel = "LON"
@@ -182,4 +189,57 @@ func testShows(test: ShowsCase) {
     var s = Settings()
     s.displays = test.displays
     #expect(s.shows("D", builtIn: test.builtIn, externalConnected: test.externalConnected) == test.wantShows)
+}
+
+// HexCase is one hex parsing expectation.
+struct HexCase: Sendable, CustomTestStringConvertible {
+    // Name labels the case.
+    let name: String
+    // Hex is the text the user typed.
+    let hex: String
+    // WantColor is the parsed color, or nil when the text is not a color.
+    let wantColor: RGBA?
+    // WantHex is the color formatted back, or empty when the text is not a color.
+    let wantHex: String
+
+    // testDescription labels the case in test output.
+    var testDescription: String { name }
+}
+
+// hexCases covers every accepted length, case, spacing, and malformed input.
+let hexCases: [HexCase] = [
+    HexCase(  // Test 0: Six digits with a hash.
+        name: "rrggbb", hex: "#FF8000", wantColor: RGBA(red: 1, green: 128.0 / 255, blue: 0), wantHex: "#FF8000"
+    ),
+    HexCase(  // Test 1: Lowercase without a hash, padded with spaces.
+        name: "lowercase bare", hex: " 0a84ff ", wantColor: RGBA(red: 10.0 / 255, green: 132.0 / 255, blue: 1),
+        wantHex: "#0A84FF"
+    ),
+    HexCase(  // Test 2: Three digits double up.
+        name: "rgb", hex: "#FA0", wantColor: RGBA(red: 1, green: 170.0 / 255, blue: 0), wantHex: "#FFAA00"
+    ),
+    HexCase(  // Test 3: Eight digits carry opacity.
+        name: "rrggbbaa", hex: "#00000080", wantColor: RGBA(red: 0, green: 0, blue: 0, alpha: 128.0 / 255),
+        wantHex: "#00000080"
+    ),
+    HexCase(name: "empty", hex: "", wantColor: nil, wantHex: ""),  // Test 4: Empty.
+    HexCase(name: "hash only", hex: "#", wantColor: nil, wantHex: ""),  // Test 5: Hash alone.
+    HexCase(name: "five digits", hex: "#12345", wantColor: nil, wantHex: ""),  // Test 6: Wrong length.
+    HexCase(name: "not hex", hex: "#GGHHII", wantColor: nil, wantHex: ""),  // Test 7: Bad digits.
+    HexCase(name: "two hashes", hex: "##FFFFFF", wantColor: nil, wantHex: ""),  // Test 8: Extra hash.
+]
+
+// testHex checks hex parsing and formatting.
+@Test(arguments: hexCases)
+func testHex(test: HexCase) {
+    let got = RGBA(hex: test.hex)
+    #expect(got == test.wantColor)
+    #expect((got?.hex ?? "") == test.wantHex)
+}
+
+// testSwatches checks that every swatch parses and none repeats.
+@Test
+func testSwatches() {
+    #expect(RGBA.swatches.count == RGBA.swatchHexes.count)
+    #expect(Set(RGBA.swatches.map(\.hex)).count == RGBA.swatches.count)
 }

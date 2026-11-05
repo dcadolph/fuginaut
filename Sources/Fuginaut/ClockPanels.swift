@@ -133,12 +133,12 @@ final class ClockPanel: NSPanel {
             let shadow = NSShadow()
             shadow.shadowBlurRadius = ClockLook.shadowBlur
             shadow.shadowOffset = .zero
-            shadow.shadowColor = ClockLook.dynamicBacking(settings).withAlphaComponent(ClockLook.shadowAlpha)
+            shadow.shadowColor = ClockLook.dynamicBacking(settings, automaticAlpha: ClockLook.shadowAlpha)
             label.shadow = shadow
         } else {
             label.shadow = nil
         }
-        pill.color = ClockLook.dynamicBacking(settings).withAlphaComponent(ClockLook.pillAlpha)
+        pill.color = ClockLook.dynamicBacking(settings, automaticAlpha: ClockLook.pillAlpha)
         pill.isHidden = settings.backing != .pill
         ignoresMouseEvents = !settings.clickOpensSettings
         var behavior: NSWindow.CollectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]

@@ -6,9 +6,9 @@ import FuginautCore
 // ClockLook turns settings into the font and colors the clock draws with, so the real clock and the
 // settings preview always match.
 enum ClockLook {
-    // pillAlpha is the opacity of the pill behind the text.
+    // pillAlpha is the opacity of the automatic pill behind the text.
     static let pillAlpha: CGFloat = 0.42
-    // shadowAlpha is the opacity of the glow behind the text.
+    // shadowAlpha is the opacity of the automatic glow behind the text.
     static let shadowAlpha: CGFloat = 0.85
     // shadowBlur is the glow's blur radius, in points.
     static let shadowBlur: CGFloat = 3
@@ -48,10 +48,14 @@ enum ClockLook {
         return NSColor(srgbRed: c.red, green: c.green, blue: c.blue, alpha: c.alpha)
     }
 
-    // backingColor returns the contrasting color behind the text for a light or dark menu bar.
-    static func backingColor(_ settings: Settings, dark: Bool) -> NSColor {
+    // backingColor returns the shadow or pill color for a light or dark menu bar. A chosen color is drawn as
+    // picked, opacity and all. Otherwise it contrasts with the text at the automatic opacity.
+    static func backingColor(_ settings: Settings, dark: Bool, automaticAlpha: CGFloat) -> NSColor {
+        if let c = settings.backingColor {
+            return NSColor(srgbRed: c.red, green: c.green, blue: c.blue, alpha: c.alpha)
+        }
         let light = settings.color?.isLight ?? dark
-        return light ? .black : .white
+        return (light ? NSColor.black : .white).withAlphaComponent(automaticAlpha)
     }
 
     // dynamicText returns the clock's color, following the menu bar's appearance when it has no fixed color.
@@ -60,9 +64,9 @@ enum ClockLook {
     }
 
     // dynamicBacking returns the backing color, resolved against whatever appearance draws it.
-    static func dynamicBacking(_ settings: Settings) -> NSColor {
+    static func dynamicBacking(_ settings: Settings, automaticAlpha: CGFloat) -> NSColor {
         NSColor(name: nil) { appearance in
-            backingColor(settings, dark: isDark(appearance))
+            backingColor(settings, dark: isDark(appearance), automaticAlpha: automaticAlpha)
         }
     }
 
