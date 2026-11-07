@@ -144,6 +144,7 @@ struct SettingsView: View {
             backingCard
         case .format:
             dayCard
+            extrasCard
             secondTimeCard
         case .general:
             displaysCard
@@ -204,7 +205,7 @@ struct SettingsView: View {
         }
     }
 
-    // typefaceCard holds the font, its weight, and capitals.
+    // typefaceCard holds the font, its weight, and its capitals.
     private var typefaceCard: some View {
         Card("Typeface") {
             Row("Font") {
@@ -234,8 +235,15 @@ struct SettingsView: View {
                 .frame(width: 280)
             }
             RowDivider()
-            Row("All caps") {
-                Toggle("All caps", isOn: $store.settings.style.uppercase).labelsHidden()
+            Row("Capitals") {
+                Picker("Capitals", selection: $store.settings.style.textCase) {
+                    Text("As written").tag(TextCase.normal)
+                    Text("ALL CAPS").tag(TextCase.upper)
+                    Text("lowercase").tag(TextCase.lower)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(width: 280)
             }
         }
     }
@@ -278,17 +286,22 @@ struct SettingsView: View {
         }
     }
 
-    // dayCard holds the date style and the time switches, or the custom pattern.
+    // dayCard holds the date style and the switches for each part, or the custom pattern.
     private var dayCard: some View {
         Card("Day and time") {
             Row("Style") {
-                Picker("Style", selection: $store.settings.style.dateStyle) {
-                    ForEach(DateStyle.allCases, id: \.self) { style in
-                        Text(Self.styleTitle(style)).tag(style)
+                Picker("Style", selection: dateStyle) {
+                    ForEach(Self.styleGroups.indices, id: \.self) { index in
+                        if index > 0 {
+                            Divider()
+                        }
+                        ForEach(Self.styleGroups[index], id: \.self) { style in
+                            Text(Self.styleTitle(style)).tag(style)
+                        }
                     }
                 }
                 .labelsHidden()
-                .frame(width: 250)
+                .frame(width: 280)
             }
             if store.settings.style.dateStyle == .custom {
                 RowDivider()
@@ -299,6 +312,7 @@ struct SettingsView: View {
                             .textFieldStyle(.roundedBorder)
                             .labelsHidden()
                             .frame(width: 210)
+                        patternMenu
                         ResetButton(disabled: store.settings.style.customPattern == ClockStyle.defaultCustomPattern) {
                             store.settings.style.customPattern = ClockStyle.defaultCustomPattern
                         }
@@ -306,7 +320,7 @@ struct SettingsView: View {
                 }
                 RowDivider()
                 HStack(spacing: 4) {
-                    Text("Unicode date letters, e.g. EEE d MMM HH:mm. Quote literal words.")
+                    Text("Unicode date letters. Quote literal words. Emoji work as typed.")
                     if let help = Self.patternHelp {
                         Link("Letters", destination: help)
                     }
@@ -317,22 +331,118 @@ struct SettingsView: View {
                 .padding(.vertical, 8)
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
+                partRows
+            }
+        }
+    }
+
+    // partRows holds the switches for the weekday, date, and time, and how they sit together.
+    @ViewBuilder private var partRows: some View {
+        let style = store.settings.style
+        RowDivider()
+        Row("Weekday") {
+            Toggle("Weekday", isOn: $store.settings.style.showWeekday).labelsHidden()
+        }
+        RowDivider()
+        Row("Date") {
+            Toggle("Date", isOn: $store.settings.style.showDate).labelsHidden()
+        }
+        RowDivider()
+        Row("Time") {
+            Toggle("Time", isOn: $store.settings.style.showTime).labelsHidden()
+        }
+        if style.showTime, style.showWeekday || style.showDate {
+            RowDivider()
+            Row("Order") {
+                Picker("Order", selection: $store.settings.style.order) {
+                    Text("Date first").tag(ClockOrder.dateFirst)
+                    Text("Time first").tag(ClockOrder.timeFirst)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(width: 200)
+            }
+            RowDivider()
+            Row("Between") {
+                Picker("Between", selection: $store.settings.style.separator) {
+                    ForEach(Separator.allCases, id: \.self) { separator in
+                        Text(Self.separatorTitle(separator)).tag(separator)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 160)
+            }
+        }
+        if style.showTime {
+            RowDivider()
+            Row("24-hour time") {
+                Toggle("24-hour time", isOn: $store.settings.style.use24Hour).labelsHidden()
+            }
+            if !style.use24Hour {
                 RowDivider()
-                Row("Weekday") {
-                    Toggle("Weekday", isOn: $store.settings.style.showWeekday).labelsHidden()
+                Row("AM and PM") {
+                    Picker("AM and PM", selection: $store.settings.style.meridiem) {
+                        Text("PM").tag(Meridiem.upper)
+                        Text("pm").tag(Meridiem.lower)
+                        Text("None").tag(Meridiem.hidden)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .frame(width: 200)
                 }
                 RowDivider()
-                Row("Date") {
-                    Toggle("Date", isOn: $store.settings.style.showDate).labelsHidden()
+                Row("Leading zero", detail: "Shows 09:05 instead of 9:05.") {
+                    Toggle("Leading zero", isOn: $store.settings.style.padHour).labelsHidden()
                 }
-                RowDivider()
-                Row("24-hour time") {
-                    Toggle("24-hour time", isOn: $store.settings.style.use24Hour).labelsHidden()
+            }
+            RowDivider()
+            Row("Seconds") {
+                Toggle("Seconds", isOn: $store.settings.style.showSeconds).labelsHidden()
+            }
+        }
+    }
+
+    // patternMenu offers example patterns and the pattern letters to add to the custom pattern.
+    private var patternMenu: some View {
+        Menu {
+            Section("Examples") {
+                ForEach(Self.patternExamples, id: \.self) { example in
+                    Button(Self.sample(pattern: example)) {
+                        store.settings.style.customPattern = example
+                    }
                 }
-                RowDivider()
-                Row("Seconds") {
-                    Toggle("Seconds", isOn: $store.settings.style.showSeconds).labelsHidden()
+            }
+            Section("Add") {
+                ForEach(Self.patternLetters, id: \.letters) { item in
+                    Button(item.name + "  ·  " + Self.sample(pattern: item.letters)) {
+                        addToPattern(item.letters)
+                    }
                 }
+            }
+        } label: {
+            Image(systemName: "plus")
+        }
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .fixedSize()
+        .help("Examples and pattern letters")
+    }
+
+    // extrasCard holds the text or emoji shown before and after the clock.
+    private var extrasCard: some View {
+        Card("Before and after") {
+            Row("Before", detail: "Text or emoji, e.g. Control-Command-Space.") {
+                TextField("Before", text: $store.settings.style.prefix, prompt: Text("None"))
+                    .textFieldStyle(.roundedBorder)
+                    .labelsHidden()
+                    .frame(width: 160)
+            }
+            RowDivider()
+            Row("After") {
+                TextField("After", text: $store.settings.style.suffix, prompt: Text("None"))
+                    .textFieldStyle(.roundedBorder)
+                    .labelsHidden()
+                    .frame(width: 160)
             }
         }
     }
@@ -424,6 +534,96 @@ struct SettingsView: View {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
     }
 
+    // styleGroups orders the date styles for the style menu, one group per section.
+    private static let styleGroups: [[DateStyle]] = [
+        [.short, .long, .dayFirst, .dayFirstLong],
+        [.withYear, .longWithYear, .dayFirstYear],
+        [.numeric, .numericYear, .padded, .dotted, .slashedDayFirst],
+        [.iso, .compactISO, .isoWeek, .dayOfYear],
+        [.custom],
+    ]
+
+    // patternExamples are ready custom patterns, emoji included.
+    private static let patternExamples = [
+        "EEE d MMM  HH:mm",
+        "EEEE '·' h:mm a",
+        "h:mm a '·' MMMM d",
+        "EEE d MMM yyyy  HH:mm",
+        "HH:mm:ss zzz",
+        "'Week' w '·' EEE HH:mm",
+        "QQQ yyyy '·' HH:mm",
+        "🚀 EEE d MMM  HH:mm",
+        "⏰ h:mm a",
+        "☕️ EEE h:mm a",
+        "🌙 MMM d  HH:mm",
+    ]
+
+    // patternLetters names the common pattern letters for the add menu.
+    private static let patternLetters: [(name: String, letters: String)] = [
+        ("Weekday", "EEE"),
+        ("Full weekday", "EEEE"),
+        ("Day", "d"),
+        ("Month", "MMM"),
+        ("Full month", "MMMM"),
+        ("Month number", "MM"),
+        ("Year", "yyyy"),
+        ("Short year", "yy"),
+        ("Hour, 12-hour", "h"),
+        ("Hour, 24-hour", "HH"),
+        ("Minute", "mm"),
+        ("Second", "ss"),
+        ("AM or PM", "a"),
+        ("Week of year", "w"),
+        ("Day of year", "D"),
+        ("Quarter", "QQQ"),
+        ("Time zone", "zzz"),
+        ("Quoted text", "'text'"),
+    ]
+
+    // dateStyle binds the style picker. Choosing custom for the first time starts the pattern from the style
+    // on show, so editing begins from what the clock already reads.
+    private var dateStyle: Binding<DateStyle> {
+        Binding {
+            store.settings.style.dateStyle
+        } set: { next in
+            var style = store.settings.style
+            if next == .custom, style.dateStyle != .custom, style.customPattern == ClockStyle.defaultCustomPattern {
+                style.customPattern = style.pattern(locale: .current)
+            }
+            style.dateStyle = next
+            store.settings.style = style
+        }
+    }
+
+    // addToPattern adds pattern letters to the end of the custom pattern, after a space.
+    private func addToPattern(_ letters: String) {
+        var pattern = store.settings.style.customPattern
+        if !pattern.isEmpty, !pattern.hasSuffix(" ") {
+            pattern += " "
+        }
+        store.settings.style.customPattern = pattern + letters
+    }
+
+    // sample formats the current time with a pattern.
+    private static func sample(pattern: String) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = pattern
+        return formatter.string(from: Date())
+    }
+
+    // separatorTitle names what sits between the day and the time.
+    private static func separatorTitle(_ separator: Separator) -> String {
+        switch separator {
+        case .spaces: "Two spaces"
+        case .dot: "Dot  ·"
+        case .bar: "Bar  |"
+        case .comma: "Comma  ,"
+        case .slash: "Slash  /"
+        case .dash: "Dash  -"
+        case .at: "The word at"
+        }
+    }
+
     // styleTitle names a date style with an example from today.
     private static func styleTitle(_ style: DateStyle) -> String {
         guard style != .custom else {
@@ -431,17 +631,28 @@ struct SettingsView: View {
         }
         var sample = ClockStyle()
         sample.dateStyle = style
-        let formatter = DateFormatter()
-        formatter.dateFormat = sample.dayPattern(locale: .current)
-        let name: String
-        switch style {
-        case .short: name = "Short"
-        case .long: name = "Long"
-        case .numeric: name = "Numeric"
-        case .iso: name = "ISO"
-        case .custom: name = "Custom"
-        }
-        return name + "  ·  " + formatter.string(from: Date())
+        sample.showTime = false
+        let name: String =
+            switch style {
+            case .short: "Short"
+            case .long: "Long"
+            case .dayFirst: "Day first"
+            case .dayFirstLong: "Day first, long"
+            case .withYear: "With year"
+            case .longWithYear: "Long with year"
+            case .dayFirstYear: "Day first with year"
+            case .numeric: "Numeric"
+            case .numericYear: "Numeric with year"
+            case .padded: "Numeric, padded"
+            case .dotted: "Dotted"
+            case .slashedDayFirst: "Numeric, day first"
+            case .iso: "ISO"
+            case .compactISO: "Compact ISO"
+            case .isoWeek: "ISO week"
+            case .dayOfYear: "Day of year"
+            case .custom: "Custom"
+            }
+        return name + "  ·  " + ClockFormatter(style: sample).string(Date())
     }
 
     // familyChoices lists installed families, plus the chosen one if it is no longer installed.

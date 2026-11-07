@@ -27,12 +27,16 @@ preview at the top and on the real clock right away.
 
 - **Size:** how big the clock reads, and a nudge off the center of the bar.
 - **Text:** the font (System, Rounded, Mono, Serif, or any installed family), its weight, and
-  all caps.
+  capitals as written, all caps, or lowercase.
 - **Color:** the clock's color, matched to the menu bar or picked from a grid of swatches, a hex
   value, or the color wheel. A shadow or a pill behind the text keeps it readable over busy
   wallpaper, in a color that contrasts on its own or one you pick the same three ways.
-- **Format:** short, long, numeric, ISO, or a custom date pattern, with switches for the weekday,
-  date, 24-hour time, and seconds, plus an optional second time zone.
+- **Format:** sixteen date styles (short, long, day first, with the year, numeric, dotted, ISO,
+  ISO week, day of year, and more) or a custom date pattern with examples and a menu of pattern
+  letters. Switches show or hide the weekday, date, and time, and put the date or the time first,
+  joined by spaces, a dot, a bar, a comma, a slash, a dash, or the word "at". The time can be 12-hour
+  or 24-hour, with or without seconds, a leading zero, and PM, pm, or neither. Text or emoji can sit
+  before and after the clock, plus an optional second time zone.
 - **General:** which displays show the clock, whether clicking it opens settings or passes
   through, whether it stays up in full screen apps, the menu bar icon, and opening at login.
 

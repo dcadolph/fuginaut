@@ -41,7 +41,10 @@ enum Stills {
         looks[.color]?.color = RGBA(hex: "#FFAD1A")
         looks[.color]?.backing = .pill
         looks[.color]?.backingColor = RGBA(hex: "#1E3A5F")
-        looks[.format]?.style.dateStyle = .custom
+        looks[.format]?.style.dateStyle = .withYear
+        looks[.format]?.style.separator = .dot
+        looks[.format]?.style.meridiem = .lower
+        looks[.format]?.style.prefix = "🚀"
         looks[.format]?.style.secondZone = "Asia/Tokyo"
         looks[.format]?.style.secondZoneLabel = "TYO"
         let login = LoginItem()

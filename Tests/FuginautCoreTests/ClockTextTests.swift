@@ -20,6 +20,8 @@ struct ClockTextCase: Sendable, CustomTestStringConvertible {
     let style: ClockStyle
     // WantText is the expected clock text.
     let wantText: String
+    // Date is the moment to format.
+    var date = moment
 
     // testDescription labels the case in test output.
     var testDescription: String { name }
@@ -116,21 +118,143 @@ let clockTextCases: [ClockTextCase] = [
         wantText: "Wed Nov 4  3:07 PM"
     ),
     ClockTextCase(  // Test 17: Capitals.
-        name: "uppercase", style: style { $0.uppercase = true }, wantText: "WED NOV 4  3:07 PM"
+        name: "uppercase", style: style { $0.textCase = .upper }, wantText: "WED NOV 4  3:07 PM"
     ),
     ClockTextCase(  // Test 18: Capitals cover the second time.
         name: "uppercase second zone",
         style: style {
-            $0.uppercase = true; $0.showWeekday = false; $0.showDate = false
+            $0.textCase = .upper; $0.showWeekday = false; $0.showDate = false
             $0.secondZone = "Asia/Tokyo"; $0.secondZoneLabel = "tyo"
         },
         wantText: "3:07 PM  ·  TYO 12:07 AM"
+    ),
+    ClockTextCase(  // Test 19: Day first.
+        name: "day first", style: style { $0.dateStyle = .dayFirst }, wantText: "Wed 4 Nov  3:07 PM"
+    ),
+    ClockTextCase(  // Test 20: Day first, long.
+        name: "day first long", style: style { $0.dateStyle = .dayFirstLong },
+        wantText: "Wednesday 4 November  3:07 PM"
+    ),
+    ClockTextCase(  // Test 21: With year.
+        name: "with year", style: style { $0.dateStyle = .withYear }, wantText: "Wed Nov 4, 2026  3:07 PM"
+    ),
+    ClockTextCase(  // Test 22: Long with year.
+        name: "long with year", style: style { $0.dateStyle = .longWithYear },
+        wantText: "Wednesday, November 4, 2026  3:07 PM"
+    ),
+    ClockTextCase(  // Test 23: Day first with year.
+        name: "day first year", style: style { $0.dateStyle = .dayFirstYear }, wantText: "Wed 4 Nov 2026  3:07 PM"
+    ),
+    ClockTextCase(  // Test 24: Numeric with year.
+        name: "numeric year", style: style { $0.dateStyle = .numericYear }, wantText: "Wed 11/4/2026  3:07 PM"
+    ),
+    ClockTextCase(  // Test 25: Numeric, padded.
+        name: "padded", style: style { $0.dateStyle = .padded }, wantText: "Wed 11/04  3:07 PM"
+    ),
+    ClockTextCase(  // Test 26: Dotted.
+        name: "dotted", style: style { $0.dateStyle = .dotted }, wantText: "Wed 4.11.2026  3:07 PM"
+    ),
+    ClockTextCase(  // Test 27: Numeric, day first.
+        name: "slashed day first", style: style { $0.dateStyle = .slashedDayFirst }, wantText: "Wed 4/11/2026  3:07 PM"
+    ),
+    ClockTextCase(  // Test 28: Compact ISO.
+        name: "compact iso", style: style { $0.dateStyle = .compactISO }, wantText: "Wed 20261104  3:07 PM"
+    ),
+    ClockTextCase(  // Test 29: ISO week counts from Monday, unlike the POSIX locale.
+        name: "iso week", style: style { $0.dateStyle = .isoWeek }, wantText: "Wed 2026-W45  3:07 PM"
+    ),
+    ClockTextCase(  // Test 30: ISO week on Sunday, November 8, which ends the week.
+        name: "iso week sunday",
+        style: style {
+            $0.dateStyle = .isoWeek; $0.showTime = false; $0.showWeekday = false
+        },
+        wantText: "2026-W45", date: Date(timeIntervalSince1970: 1_794_096_000)
+    ),
+    ClockTextCase(  // Test 31: Day of year.
+        name: "day of year", style: style { $0.dateStyle = .dayOfYear }, wantText: "Wed Day 308  3:07 PM"
+    ),
+    ClockTextCase(  // Test 32: Time first.
+        name: "time first", style: style { $0.order = .timeFirst }, wantText: "3:07 PM  Wed Nov 4"
+    ),
+    ClockTextCase(  // Test 33: Date only.
+        name: "date only", style: style { $0.showTime = false }, wantText: "Wed Nov 4"
+    ),
+    ClockTextCase(  // Test 34: Hiding everything still shows the time.
+        name: "nothing",
+        style: style {
+            $0.showTime = false; $0.showWeekday = false; $0.showDate = false
+        },
+        wantText: "3:07 PM"
+    ),
+    ClockTextCase(  // Test 35: Dot separator.
+        name: "dot", style: style { $0.separator = .dot }, wantText: "Wed Nov 4 · 3:07 PM"
+    ),
+    ClockTextCase(  // Test 36: Bar separator, time first.
+        name: "bar time first",
+        style: style {
+            $0.separator = .bar; $0.order = .timeFirst
+        },
+        wantText: "3:07 PM | Wed Nov 4"
+    ),
+    ClockTextCase(  // Test 37: Comma separator.
+        name: "comma", style: style { $0.separator = .comma }, wantText: "Wed Nov 4, 3:07 PM"
+    ),
+    ClockTextCase(  // Test 38: Slash separator.
+        name: "slash", style: style { $0.separator = .slash }, wantText: "Wed Nov 4 / 3:07 PM"
+    ),
+    ClockTextCase(  // Test 39: Dash separator.
+        name: "dash", style: style { $0.separator = .dash }, wantText: "Wed Nov 4 - 3:07 PM"
+    ),
+    ClockTextCase(  // Test 40: The word at.
+        name: "at", style: style { $0.separator = .at }, wantText: "Wed Nov 4 at 3:07 PM"
+    ),
+    ClockTextCase(  // Test 41: Lowercase AM and PM, also on the second time.
+        name: "lower meridiem",
+        style: style {
+            $0.meridiem = .lower; $0.showWeekday = false; $0.showDate = false; $0.secondZone = "Asia/Tokyo"
+            $0.secondZoneLabel = "TYO"
+        },
+        wantText: "3:07 pm  ·  TYO 12:07 am"
+    ),
+    ClockTextCase(  // Test 42: Hidden AM and PM.
+        name: "hidden meridiem", style: style { $0.meridiem = .hidden }, wantText: "Wed Nov 4  3:07"
+    ),
+    ClockTextCase(  // Test 43: Leading zero on a 12-hour time.
+        name: "padded hour",
+        style: style {
+            $0.padHour = true; $0.showSeconds = true
+        },
+        wantText: "Wed Nov 4  03:07:09 PM"
+    ),
+    ClockTextCase(  // Test 44: 24-hour time ignores the 12-hour options.
+        name: "24-hour ignores meridiem",
+        style: style {
+            $0.use24Hour = true; $0.meridiem = .lower; $0.padHour = true
+        },
+        wantText: "Wed Nov 4  15:07"
+    ),
+    ClockTextCase(  // Test 45: Lowercase text.
+        name: "lowercase", style: style { $0.textCase = .lower }, wantText: "wed nov 4  3:07 pm"
+    ),
+    ClockTextCase(  // Test 46: Prefix and suffix stay as typed, trimmed, and outside the capitals.
+        name: "prefix suffix",
+        style: style {
+            $0.prefix = " 🚀 "; $0.suffix = "Go"; $0.textCase = .upper; $0.showWeekday = false
+        },
+        wantText: "🚀 NOV 4  3:07 PM Go"
+    ),
+    ClockTextCase(  // Test 47: Prefix with a custom pattern holding emoji.
+        name: "custom emoji",
+        style: style {
+            $0.dateStyle = .custom; $0.customPattern = "⏰ h:mm a"; $0.prefix = "Now"; $0.meridiem = .lower
+        },
+        wantText: "Now ⏰ 3:07 PM"
     ),
 ]
 
 // testClockText checks each style against the same moment.
 @Test(arguments: clockTextCases)
 func testClockText(test: ClockTextCase) {
-    let got = ClockFormatter(style: test.style, locale: posix, zone: utc).string(moment)
+    let got = ClockFormatter(style: test.style, locale: posix, zone: utc).string(test.date)
     #expect(got == test.wantText)
 }

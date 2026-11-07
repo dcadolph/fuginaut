@@ -59,10 +59,10 @@ let settingsCases: [SettingsCase] = [
     SettingsCase(  // Test 6: Font, backing, and new style fields.
         name: "font and backing",
         json:
-            #"{"fontDesign":"family","fontFamily":"Avenir Next","backing":"pill","style":{"dateStyle":"iso","uppercase":true}}"#,
+            #"{"fontDesign":"family","fontFamily":"Avenir Next","backing":"pill","style":{"dateStyle":"iso","textCase":"upper","prefix":"🚀"}}"#,
         wantSettings: settings {
             $0.fontDesign = .family; $0.fontFamily = "Avenir Next"; $0.backing = .pill
-            $0.style.dateStyle = .iso; $0.style.uppercase = true
+            $0.style.dateStyle = .iso; $0.style.textCase = .upper; $0.style.prefix = "🚀"
         }
     ),
     SettingsCase(  // Test 7: Backing color.
@@ -100,7 +100,7 @@ func testRoundTrip() throws {
         $0.style.secondZoneLabel = "LON"
         $0.style.dateStyle = .custom
         $0.style.customPattern = "HH:mm"
-        $0.style.uppercase = true
+        $0.style.textCase = .upper
         $0.displays = ["X": false, "Y": true]
         $0.showWhenBarHidden = true
         $0.showMenuIcon = false
