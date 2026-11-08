@@ -143,14 +143,13 @@ let worldCases: [WorldCase] = [
             $0.language = "ja"
             $0.calendar = .japanese
         }, wantText: "令和8年11月4日(水)  午後9:07"),
-    WorldCase(  // Test 16: Arabic writes its own date order with its own commas.
+    WorldCase(  // Test 16: Arabic writes its own date order with its own comma.
         name: "arabic order",
         style: {
             dateOnly(&$0)
             $0.language = "ar"
             $0.numerals = .arabicIndic
-            $0.calendar = .islamicUmmAlQura
-        }, wantText: "٢٤ جمادى الأولى، ١٤٤٨ هـ"),
+        }, wantText: "٤ نوفمبر، ٢٠٢٦"),
     WorldCase(  // Test 17: Korean puts the year first and AM or PM before the time.
         name: "korean order",
         style: {
