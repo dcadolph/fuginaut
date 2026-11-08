@@ -44,6 +44,8 @@ struct SettingsView: View {
     @Bindable var store: SettingsStore
     // loginItem starts Fuginaut at login.
     var loginItem: LoginItem
+    // updates checks for newer releases.
+    var updates: UpdateMonitor
     // tab is the page on show.
     @State var tab: SettingsTab = .size
     // previewDark draws the preview's menu bar dark, or follows the system when nil.
@@ -149,6 +151,7 @@ struct SettingsView: View {
         case .general:
             displaysCard
             behaviorCard
+            updatesCard
             footer
         }
     }
@@ -494,6 +497,56 @@ struct SettingsView: View {
         }
     }
 
+    // updatesCard holds the automatic check switch and the result of the last check.
+    private var updatesCard: some View {
+        Card("Updates") {
+            Row("Check for updates automatically", detail: "Asks GitHub for the latest release every six hours.") {
+                Toggle("Check for updates automatically", isOn: $store.settings.checkUpdates).labelsHidden()
+            }
+            RowDivider()
+            Row(updateTitle, detail: updateDetail) {
+                switch updates.status {
+                case .available:
+                    Button("Download") {
+                        updates.openRelease()
+                    }
+                case .checking:
+                    ProgressView().controlSize(.small)
+                default:
+                    Button("Check Now") {
+                        Task {
+                            await updates.check()
+                        }
+                    }
+                    .disabled(updates.status == .unavailable)
+                }
+            }
+        }
+    }
+
+    // updateTitle states the result of the last check.
+    private var updateTitle: String {
+        switch updates.status {
+        case .unchecked: "Not checked yet"
+        case .unavailable: "Development build"
+        case .checking: "Checking…"
+        case .upToDate: "Up to date"
+        case .available(let release): "Version \(release.version) is available"
+        case .failed: "Couldn't check"
+        }
+    }
+
+    // updateDetail explains the result of the last check.
+    private var updateDetail: String? {
+        switch updates.status {
+        case .unchecked, .checking: nil
+        case .unavailable: "Builds without a release version don't check."
+        case .upToDate(let date): "Checked \(date.formatted(date: .omitted, time: .shortened))."
+        case .available: "Or run \(UpdateMonitor.brewCommand) in Terminal."
+        case .failed(let reason): reason
+        }
+    }
+
     // footer holds the version, reset, and quit.
     private var footer: some View {
         HStack {
@@ -530,7 +583,7 @@ struct SettingsView: View {
     }
 
     // version is the app's version from its bundle.
-    private static var version: String {
+    static var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
     }
 

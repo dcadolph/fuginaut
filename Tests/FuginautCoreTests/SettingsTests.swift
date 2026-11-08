@@ -105,6 +105,7 @@ func testRoundTrip() throws {
         $0.showWhenBarHidden = true
         $0.showMenuIcon = false
         $0.clickOpensSettings = false
+        $0.checkUpdates = false
     }
     let got = try JSONDecoder().decode(Settings.self, from: JSONEncoder().encode(want))
     #expect(got == want)
