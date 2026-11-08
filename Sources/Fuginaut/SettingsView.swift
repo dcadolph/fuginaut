@@ -511,6 +511,10 @@ struct SettingsView: View {
     // behaviorCard holds visibility and login.
     private var behaviorCard: some View {
         Card("Behavior") {
+            Row("Show the clock", detail: "Click the eclipse in the menu bar to switch it. Right-click for the menu.") {
+                Toggle("Show the clock", isOn: $store.settings.clockEnabled).labelsHidden()
+            }
+            RowDivider()
             Row("Show when the menu bar hides", detail: "Keeps the clock up in full screen apps.") {
                 Toggle("Show when the menu bar hides", isOn: $store.settings.showWhenBarHidden).labelsHidden()
             }
@@ -601,7 +605,7 @@ struct SettingsView: View {
         guard !store.settings.showMenuIcon else {
             return nil
         }
-        return store.settings.clickOpensSettings
+        return store.settings.clickOpensSettings && store.settings.clockEnabled
             ? "Click the clock to get back here."
             : "Open Fuginaut again from Applications to get back here."
     }

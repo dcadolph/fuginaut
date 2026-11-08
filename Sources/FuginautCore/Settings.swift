@@ -151,6 +151,8 @@ public struct Settings: Codable, Equatable, Sendable {
     public var clickOpensSettings = true
     // checkUpdates asks GitHub for a newer release a minute after launch and every six hours after.
     public var checkUpdates = true
+    // clockEnabled draws the clock. When false, the clock is off on every display.
+    public var clockEnabled = true
 
     // init builds the default settings.
     public init() {}
@@ -173,6 +175,7 @@ public struct Settings: Codable, Equatable, Sendable {
         showMenuIcon = try c.decodeIfPresent(Bool.self, forKey: .showMenuIcon) ?? d.showMenuIcon
         clickOpensSettings = try c.decodeIfPresent(Bool.self, forKey: .clickOpensSettings) ?? d.clickOpensSettings
         checkUpdates = try c.decodeIfPresent(Bool.self, forKey: .checkUpdates) ?? d.checkUpdates
+        clockEnabled = try c.decodeIfPresent(Bool.self, forKey: .clockEnabled) ?? d.clockEnabled
         offset = min(Self.offsets.upperBound, max(Self.offsets.lowerBound, offset))
         fontSize = min(Self.fontSizes.upperBound, max(Self.fontSizes.lowerBound, fontSize))
     }
