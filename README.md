@@ -22,8 +22,11 @@ clock. On a screen with a notch, the clock slides beside the notch instead of hi
 
 ## Settings
 
-Click the clock or the eclipse in the menu bar to open settings. Every change shows in the live
-preview at the top and on the real clock right away.
+Click the clock to open settings, or right-click the eclipse in the menu bar and pick Settings.
+Every change shows in the live preview at the top and on the real clock right away.
+
+Click the eclipse to turn the clock on and off. It glows amber while the clock is on and goes plain
+while it is off.
 
 - **Size:** how big the clock reads, and a nudge off the center of the bar.
 - **Text:** the font (System, Rounded, Mono, Serif, or any installed family), its weight, and
@@ -36,8 +39,12 @@ preview at the top and on the real clock right away.
   letters. Switches show or hide the weekday, date, and time, and put the date or the time first,
   joined by spaces, a dot, a bar, a comma, a slash, a dash, or the word "at". The time can be 12-hour
   or 24-hour, with or without seconds, a leading zero, and PM, pm, or neither. Text or emoji can sit
-  before and after the clock, plus an optional second time zone.
-- **General:** which displays show the clock, whether clicking it opens settings or passes
+  before and after the clock.
+- **World:** the language of the day and month names, the digits (Western, Arabic-Indic, Persian,
+  Devanagari, Bengali, Thai, and more), and the calendar (Gregorian, Islamic, Hebrew, Persian,
+  Indian, Buddhist, Japanese, Chinese, and more). A second time zone comes from a list you search by
+  city, zone name, or UTC offset.
+- **General:** whether the clock shows, which displays show it, whether clicking it opens settings or passes
   through, whether it stays up in full screen apps, the menu bar icon, opening at login, and
   checking for updates.
 
