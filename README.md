@@ -42,7 +42,8 @@ while it is off.
   before and after the clock.
 - **World:** the language of the day and month names, the digits (Western, Arabic-Indic, Persian,
   Devanagari, Bengali, Thai, and more), and the calendar (Gregorian, Islamic, Hebrew, Persian,
-  Indian, Buddhist, Japanese, Chinese, and more). A second time zone comes from a list you search by
+  Indian, Buddhist, Japanese, Chinese, and more). Other languages write the date and time in their
+  own word order. A second time zone comes from a list you search by
   city, zone name, or UTC offset.
 - **General:** whether the clock shows, which displays show it, whether clicking it opens settings or passes
   through, whether it stays up in full screen apps, the menu bar icon, opening at login, and
