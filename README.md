@@ -38,9 +38,13 @@ preview at the top and on the real clock right away.
   or 24-hour, with or without seconds, a leading zero, and PM, pm, or neither. Text or emoji can sit
   before and after the clock, plus an optional second time zone.
 - **General:** which displays show the clock, whether clicking it opens settings or passes
-  through, whether it stays up in full screen apps, the menu bar icon, and opening at login.
+  through, whether it stays up in full screen apps, the menu bar icon, opening at login, and
+  checking for updates.
 
-Fuginaut asks for no permissions and sends nothing anywhere.
+Fuginaut asks for no permissions. Its only network request asks GitHub for the latest release,
+every six hours and when you pick Check for Updates. Turn the automatic check off in General and
+it sends nothing at all until you ask. A new release is announced once, with a link to download
+it or the Homebrew command to upgrade.
 
 ## Install
 

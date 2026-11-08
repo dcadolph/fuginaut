@@ -48,12 +48,15 @@ enum Stills {
         looks[.format]?.style.secondZone = "Asia/Tokyo"
         looks[.format]?.style.secondZoneLabel = "TYO"
         let login = LoginItem()
+        let release = Release(
+            version: ReleaseVersion("9.9.9")!, page: URL(string: "https://github.com/dcadolph/fuginaut/releases")!)
         let astronaut = NSImage(contentsOfFile: "art/astronaut.png")
         for tab in SettingsTab.allCases {
             for dark in [false, true] {
+                let store = SettingsStore(fixture: looks[tab] ?? FuginautCore.Settings())
                 let view = SettingsView(
-                    store: SettingsStore(fixture: looks[tab] ?? FuginautCore.Settings()), loginItem: login, tab: tab,
-                    previewDark: dark, previewDate: date, astronaut: astronaut
+                    store: store, loginItem: login, updates: UpdateMonitor(fixture: .available(release), store: store),
+                    tab: tab, previewDark: dark, previewDate: date, astronaut: astronaut
                 )
                 let name = "settings-\(tab.rawValue)-\(dark ? "dark" : "light").png"
                 let url = out.appendingPathComponent(name)
