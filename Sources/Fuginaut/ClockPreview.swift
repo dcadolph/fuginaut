@@ -104,8 +104,8 @@ struct ClockPreview: View {
             .padding(.leading, 14)
             .frame(height: height)
             HStack(spacing: 10) {
-                Image(nsImage: EclipseGlyph.image())
-                    .renderingMode(.template)
+                Image(nsImage: EclipseGlyph.image(lit: settings.clockEnabled))
+                    .renderingMode(settings.clockEnabled ? .original : .template)
                     .foregroundStyle(ink.opacity(0.75))
                 ForEach(Array(Self.statusWidths.enumerated()), id: \.offset) { _, item in
                     Capsule().frame(width: item, height: 6)

@@ -12,29 +12,32 @@ enum EclipseGlyph {
     static let haloOuter: CGFloat = 8.75
     // haloAlpha is the halo's opacity at the ring, fading to clear at haloOuter so it reads as glow.
     static let haloAlpha: CGFloat = 0.55
+    // amber is the lit ring's color, the art's eclipse ring.
+    static let amber = NSColor(srgbRed: 1, green: 0.68, blue: 0.1, alpha: 1)
 
-    // image returns the glyph as a template image, so macOS tints it to match the menu bar.
-    static func image() -> NSImage {
+    // image returns the glyph. A lit glyph keeps its amber color. An unlit one is a template image, so macOS
+    // tints it to match the menu bar.
+    static func image(lit: Bool = false) -> NSImage {
         let image = NSImage(size: size, flipped: false) { rect in
-            draw(in: rect)
+            draw(in: rect, color: lit ? amber : .black)
             return true
         }
-        image.isTemplate = true
-        image.accessibilityDescription = "Fuginaut"
+        image.isTemplate = !lit
+        image.accessibilityDescription = lit ? "Fuginaut, clock on" : "Fuginaut, clock off"
         return image
     }
 
-    // draw fills the halo and the ring in black, leaving the disc clear, centered in rect.
-    static func draw(in rect: NSRect) {
+    // draw fills the halo and the ring in color, leaving the disc clear, centered in rect.
+    static func draw(in rect: NSRect, color: NSColor = .black) {
         let center = NSPoint(x: rect.midX, y: rect.midY)
-        let glow = NSColor.black.withAlphaComponent(haloAlpha)
+        let glow = color.withAlphaComponent(haloAlpha)
         NSGraphicsContext.saveGraphicsState()
         annulus(center: center, outer: haloOuter, inner: ringOuter).addClip()
         NSGradient(starting: glow, ending: .clear)?.draw(
             fromCenter: center, radius: ringOuter, toCenter: center, radius: haloOuter, options: []
         )
         NSGraphicsContext.restoreGraphicsState()
-        NSColor.black.setFill()
+        color.setFill()
         annulus(center: center, outer: ringOuter, inner: ringInner).fill()
     }
 

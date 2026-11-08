@@ -74,7 +74,7 @@ final class ClockPanels: NSObject {
     @objc private func layout() {
         let settings = store.settings
         var seen = Set<CGDirectDisplayID>()
-        for display in Display.shown(settings) {
+        for display in settings.clockEnabled ? Display.shown(settings) : [] {
             seen.insert(display.id)
             let panel = panels[display.id] ?? makePanel(display.id)
             panel.show(text: text, bar: display.bar(fallback: settings.showWhenBarHidden), settings: settings)
