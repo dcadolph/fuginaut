@@ -9,6 +9,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
     case text
     case color
     case format
+    case world
     case general
 
     // id identifies the tab in lists.
@@ -21,6 +22,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .text: "Text"
         case .color: "Color"
         case .format: "Format"
+        case .world: "World"
         case .general: "General"
         }
     }
@@ -32,6 +34,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .text: "textformat"
         case .color: "paintpalette"
         case .format: "calendar.badge.clock"
+        case .world: "globe"
         case .general: "gearshape"
         }
     }
@@ -62,8 +65,6 @@ struct SettingsView: View {
     static let width: CGFloat = 540
     // pageHeight is the height of the card area, fixed so the window keeps its size across tabs.
     static let pageHeight: CGFloat = 372
-    // zones lists every time zone identifier for the second time picker.
-    private static let zones = TimeZone.knownTimeZoneIdentifiers.sorted()
     // families lists the installed font families for the font picker.
     private static let families = ClockLook.families()
     // patternHelp is the Unicode table of date pattern letters.
@@ -147,6 +148,8 @@ struct SettingsView: View {
         case .format:
             dayCard
             extrasCard
+        case .world:
+            languageCard
             secondTimeCard
         case .general:
             displaysCard
@@ -450,19 +453,48 @@ struct SettingsView: View {
         }
     }
 
+    // languageCard holds the language, numerals, and calendar the clock is written in.
+    private var languageCard: some View {
+        Card("Language, numerals, and calendar") {
+            Row("Language", detail: "Writes the day and month names.") {
+                Picker("Language", selection: $store.settings.style.language) {
+                    Text("Automatic").tag("")
+                    Divider()
+                    ForEach(ClockLanguage.all) { language in
+                        Text(language.title).tag(language.id)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 240, alignment: .trailing)
+            }
+            RowDivider()
+            Row("Numerals", detail: "Writes the digits.") {
+                Picker("Numerals", selection: $store.settings.style.numerals) {
+                    ForEach(Numerals.allCases, id: \.self) { numerals in
+                        Text(Self.numeralsTitle(numerals)).tag(numerals)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 240, alignment: .trailing)
+            }
+            RowDivider()
+            Row("Calendar", detail: "Counts the date. ISO styles stay Gregorian.") {
+                Picker("Calendar", selection: $store.settings.style.calendar) {
+                    ForEach(ClockCalendar.allCases, id: \.self) { calendar in
+                        Text(Self.calendarTitle(calendar)).tag(calendar)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 240, alignment: .trailing)
+            }
+        }
+    }
+
     // secondTimeCard holds the second time zone and its label.
     private var secondTimeCard: some View {
         Card("Second time") {
             Row("Time zone") {
-                Picker("Time zone", selection: $store.settings.style.secondZone) {
-                    Text("None").tag("")
-                    Divider()
-                    ForEach(Self.zones, id: \.self) { zone in
-                        Text(zone.replacingOccurrences(of: "_", with: " ")).tag(zone)
-                    }
-                }
-                .labelsHidden()
-                .frame(width: 220)
+                ZoneChooser(selection: $store.settings.style.secondZone)
             }
             if !store.settings.style.secondZone.isEmpty {
                 RowDivider()
@@ -664,6 +696,31 @@ struct SettingsView: View {
         return formatter.string(from: Date())
     }
 
+    // numeralsTitle names digits with the current time written in them.
+    private static func numeralsTitle(_ numerals: Numerals) -> String {
+        guard numerals != .automatic else {
+            return numerals.title
+        }
+        var sample = ClockStyle()
+        sample.numerals = numerals
+        sample.dateStyle = .custom
+        sample.customPattern = "h:mm"
+        return numerals.title + "  ·  " + ClockFormatter(style: sample).string(Date())
+    }
+
+    // calendarTitle names a calendar with today's date counted in it.
+    private static func calendarTitle(_ calendar: ClockCalendar) -> String {
+        guard calendar != .automatic else {
+            return calendar.title
+        }
+        var sample = ClockStyle()
+        sample.calendar = calendar
+        sample.dateStyle = .withYear
+        sample.showWeekday = false
+        sample.showTime = false
+        return calendar.title + "  ·  " + ClockFormatter(style: sample).string(Date())
+    }
+
     // separatorTitle names what sits between the day and the time.
     private static func separatorTitle(_ separator: Separator) -> String {
         switch separator {
@@ -780,6 +837,120 @@ struct SettingsView: View {
         } set: { on in
             loginItem.setEnabled(on)
         }
+    }
+}
+
+// ZoneChooser is a button that opens a searchable list of time zones.
+struct ZoneChooser: View {
+    // selection is the chosen zone identifier, or empty for none.
+    @Binding var selection: String
+    // open reports whether the list is showing.
+    @State private var open = false
+    // query is the search text.
+    @State private var query = ""
+    // entries is every zone, built when the list opens so offsets are current.
+    @State private var entries: [ZoneEntry] = []
+    // searching keeps the keyboard in the search field.
+    @FocusState private var searching: Bool
+
+    // body draws the button that opens the list.
+    var body: some View {
+        Button(title) {
+            entries = ZoneCatalog.entries(at: Date())
+            query = ""
+            open = true
+        }
+        .popover(isPresented: $open, arrowEdge: .bottom) {
+            list
+        }
+    }
+
+    // title names the chosen zone.
+    private var title: String {
+        guard !selection.isEmpty else {
+            return "None"
+        }
+        guard let entry = ZoneCatalog.entry(selection, at: Date()) else {
+            return selection
+        }
+        return entry.city + "  ·  " + entry.offset
+    }
+
+    // matches holds the zones the search keeps.
+    private var matches: [ZoneEntry] {
+        ZoneCatalog.matches(query, in: entries)
+    }
+
+    // list draws the search field over the results. Return chooses the first result.
+    private var list: some View {
+        VStack(spacing: 0) {
+            TextField("City, zone, or UTC offset", text: $query)
+                .textFieldStyle(.roundedBorder)
+                .focused($searching)
+                .onSubmit {
+                    if let first = matches.first {
+                        choose(first.id)
+                    }
+                }
+                .padding(10)
+            Divider()
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    if query.isEmpty {
+                        row(title: "None", detail: nil, offset: nil, id: "")
+                    }
+                    ForEach(matches) { entry in
+                        row(title: entry.city, detail: entry.region, offset: entry.offset, id: entry.id)
+                    }
+                    if matches.isEmpty {
+                        Text("No time zones match.")
+                            .foregroundStyle(.secondary)
+                            .padding(10)
+                    }
+                }
+            }
+        }
+        .frame(width: 320, height: 340)
+        .onAppear {
+            searching = true
+        }
+    }
+
+    // row draws one choice.
+    private func row(title: String, detail: String?, offset: String?, id: String) -> some View {
+        Button {
+            choose(id)
+        } label: {
+            HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title)
+                    if let detail, !detail.isEmpty {
+                        Text(detail)
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Spacer(minLength: 8)
+                if let offset {
+                    Text(offset)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+                Image(systemName: "checkmark")
+                    .font(.system(size: 11, weight: .semibold))
+                    .opacity(id == selection ? 1 : 0)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    // choose sets the zone and closes the list.
+    private func choose(_ id: String) {
+        selection = id
+        open = false
     }
 }
 
