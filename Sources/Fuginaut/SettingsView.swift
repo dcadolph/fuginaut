@@ -492,7 +492,7 @@ struct SettingsView: View {
 
     // secondTimeCard holds the second time zone and its label.
     private var secondTimeCard: some View {
-        Card("Second time") {
+        Card("Second time zone") {
             Row("Time zone") {
                 ZoneChooser(selection: $store.settings.style.secondZone)
             }
@@ -511,7 +511,8 @@ struct SettingsView: View {
     // behaviorCard holds visibility and login.
     private var behaviorCard: some View {
         Card("Behavior") {
-            Row("Show the clock", detail: "Click the eclipse in the menu bar to switch it. Right-click for the menu.") {
+            Row("Show the clock", detail: "Click the eclipse to turn the clock on or off. Right-click it for the menu.")
+            {
                 Toggle("Show the clock", isOn: $store.settings.clockEnabled).labelsHidden()
             }
             RowDivider()
