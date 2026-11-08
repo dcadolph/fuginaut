@@ -37,6 +37,18 @@ public enum DateStyle: String, Codable, CaseIterable, Sendable {
     // custom uses the style's custom pattern for the whole clock.
     case custom
 
+    // nativeFields are the template fields for a style that writes the month in words, or nil for a style
+    // with a fixed shape.
+    var nativeFields: String? {
+        switch self {
+        case .short, .dayFirst, .custom: "MMMd"
+        case .long, .dayFirstLong: "MMMMd"
+        case .withYear, .dayFirstYear: "yMMMd"
+        case .longWithYear: "yMMMMd"
+        default: nil
+        }
+    }
+
     // isLong reports whether the style spells out the weekday.
     var isLong: Bool {
         self == .long || self == .dayFirstLong || self == .longWithYear
@@ -194,14 +206,47 @@ public struct ClockStyle: Codable, Equatable, Sendable {
         return Locale(components: components)
     }
 
-    // timePattern is the date format for the time alone.
-    public var timePattern: String {
+    // writesNatively reports whether a locale takes its own word order. English keeps the styles as written.
+    private func writesNatively(_ locale: Locale) -> Bool {
+        locale.language.languageCode != .english
+    }
+
+    // timePattern returns the date format for the time alone, with AM and PM where the language puts them.
+    public func timePattern(locale: Locale) -> String {
         let seconds = showSeconds ? ":ss" : ""
         if use24Hour {
             return "HH:mm" + seconds
         }
-        let time = (padHour ? "hh" : "h") + ":mm" + seconds
-        return meridiem == .hidden ? time : time + " a"
+        let hour = padHour ? "hh" : "h"
+        let time = hour + ":mm" + seconds
+        if meridiem == .hidden {
+            return time
+        }
+        guard writesNatively(locale) else {
+            return time + " a"
+        }
+        let template = "hmm" + (showSeconds ? "ss" : "") + "a"
+        guard let native = DateFormatter.dateFormat(fromTemplate: template, options: 0, locale: locale) else {
+            return time + " a"
+        }
+        return padHour ? Self.paddingHour(native) : native
+    }
+
+    // paddingHour doubles the 12-hour field of a date format, leaving quoted text alone, because a template
+    // does not keep a leading zero.
+    private static func paddingHour(_ pattern: String) -> String {
+        var quoted = false
+        var padded = ""
+        for letter in pattern {
+            if letter == "'" {
+                quoted.toggle()
+            }
+            padded.append(letter)
+            if !quoted, letter == "h" || letter == "K" {
+                padded.append(letter)
+            }
+        }
+        return padded
     }
 
     // usesCustomPattern reports whether the custom pattern replaces the built-in parts.
@@ -216,21 +261,29 @@ public struct ClockStyle: Codable, Equatable, Sendable {
             return customPattern
         }
         let day = dayPattern(locale: locale)
-        let time = showTime ? timePattern : nil
+        let time = showTime ? timePattern(locale: locale) : nil
         switch (day, time) {
         case (let day?, let time?):
             return order == .dateFirst ? day + separator.pattern + time : time + separator.pattern + day
         case (let day?, nil):
             return day
         case (nil, _):
-            return timePattern
+            return timePattern(locale: locale)
         }
     }
 
     // dayPattern returns the date format for the weekday and date, or nil when the style shows neither. A
-    // custom style reads as short here.
+    // custom style reads as short here. Other languages write a style with the month in words in their own
+    // order, so Japanese reads 令和8年11月8日(日).
     public func dayPattern(locale: Locale) -> String? {
         let long = dateStyle.isLong
+        if writesNatively(locale), let fields = dateStyle.nativeFields {
+            let template = (showWeekday ? (long ? "EEEE" : "EEE") : "") + (showDate ? fields : "")
+            guard !template.isEmpty else {
+                return nil
+            }
+            return DateFormatter.dateFormat(fromTemplate: template, options: 0, locale: locale) ?? template
+        }
         var day: [String] = []
         if showWeekday {
             day.append(long ? "EEEE" : "EEE")
@@ -297,7 +350,7 @@ public final class ClockFormatter {
         main.dateFormat = style.usesCustomPattern ? pattern : Self.fittingYear(pattern, to: main.calendar.identifier)
         if !style.secondZone.isEmpty, let other = TimeZone(identifier: style.secondZone) {
             let f = Self.formatter(locale: locale, zone: other, lowerMeridiem: lowerMeridiem)
-            f.dateFormat = style.timePattern
+            f.dateFormat = style.timePattern(locale: locale)
             second = f
         } else {
             second = nil

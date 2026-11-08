@@ -135,7 +135,105 @@ let worldCases: [WorldCase] = [
             $0.language = "hi"
             $0.numerals = .devanagari
             $0.calendar = .indian
-        }, wantText: "कार्तिक १३, १९४८"),
+        }, wantText: "१३ कार्तिक १९४८ शक"),
+    WorldCase(  // Test 15: Japanese writes its own date and time order.
+        name: "japanese order",
+        style: {
+            $0.dateStyle = .withYear
+            $0.language = "ja"
+            $0.calendar = .japanese
+        }, wantText: "令和8年11月4日(水)  午後9:07"),
+    WorldCase(  // Test 16: Arabic writes its own date order with its own commas.
+        name: "arabic order",
+        style: {
+            dateOnly(&$0)
+            $0.language = "ar"
+            $0.numerals = .arabicIndic
+            $0.calendar = .islamicUmmAlQura
+        }, wantText: "٢٤ جمادى الأولى، ١٤٤٨ هـ"),
+    WorldCase(  // Test 17: Korean puts the year first and AM or PM before the time.
+        name: "korean order",
+        style: {
+            $0.dateStyle = .withYear
+            $0.showWeekday = false
+            $0.language = "ko"
+        }, wantText: "2026년 11월 4일  오후 9:07"),
+    WorldCase(  // Test 18: A long style spells the weekday in native order.
+        name: "french long",
+        style: {
+            $0.dateStyle = .longWithYear
+            $0.showTime = false
+            $0.language = "fr"
+        }, wantText: "mercredi 4 novembre 2026"),
+    WorldCase(  // Test 19: A weekday alone is still written.
+        name: "weekday only",
+        style: {
+            $0.showDate = false
+            $0.showTime = false
+            $0.language = "fr"
+        }, wantText: "mer."),
+    WorldCase(  // Test 20: A style that hides the day still shows the time.
+        name: "time only native",
+        style: {
+            $0.showWeekday = false
+            $0.showDate = false
+            $0.language = "ja"
+        }, wantText: "午後9:07"),
+    WorldCase(  // Test 21: The second time takes the same native order.
+        name: "second zone native",
+        style: {
+            $0.showWeekday = false
+            $0.showDate = false
+            $0.language = "ja"
+            $0.secondZone = "Asia/Tokyo"
+            $0.secondZoneLabel = "東京"
+        }, wantText: "午後9:07  ·  東京 午前6:07"),
+    WorldCase(  // Test 22: Native order keeps seconds and the leading zero.
+        name: "native seconds and zero",
+        style: {
+            $0.showWeekday = false
+            $0.showDate = false
+            $0.showSeconds = true
+            $0.padHour = true
+            $0.language = "ko"
+        }, wantText: "오후 09:07:00"),
+    WorldCase(  // Test 23: The leading zero reaches a Japanese hour.
+        name: "japanese zero",
+        style: {
+            $0.showWeekday = false
+            $0.showDate = false
+            $0.padHour = true
+            $0.language = "ja"
+        }, wantText: "午後09:07"),
+    WorldCase(  // Test 24: Hiding AM and PM stays plain in any language.
+        name: "native hidden meridiem",
+        style: {
+            $0.showWeekday = false
+            $0.showDate = false
+            $0.meridiem = .hidden
+            $0.language = "ja"
+        }, wantText: "9:07"),
+    WorldCase(  // Test 25: A 24-hour clock stays plain in any language.
+        name: "native 24 hour",
+        style: {
+            $0.showWeekday = false
+            $0.showDate = false
+            $0.use24Hour = true
+            $0.language = "ja"
+        }, wantText: "21:07"),
+    WorldCase(  // Test 26: ISO keeps its shape in any language.
+        name: "native iso",
+        style: {
+            dateOnly(&$0, .iso)
+            $0.language = "ja"
+        }, wantText: "2026-11-04"),
+    WorldCase(  // Test 27: British English keeps the style as written.
+        name: "british short",
+        style: {
+            $0.showWeekday = false
+            $0.showTime = false
+            $0.language = "en-GB"
+        }, wantText: "Nov 4"),
 ]
 
 // testWorldText checks clock text for each world choice.
