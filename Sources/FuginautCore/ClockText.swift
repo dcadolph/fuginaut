@@ -41,6 +41,11 @@ public enum DateStyle: String, Codable, CaseIterable, Sendable {
     var isLong: Bool {
         self == .long || self == .dayFirstLong || self == .longWithYear
     }
+
+    // isISO reports whether the style is an ISO 8601 date, which is always counted in the Gregorian way.
+    var isISO: Bool {
+        self == .iso || self == .compactISO || self == .isoWeek
+    }
 }
 
 // ClockOrder chooses whether the day or the time comes first.
@@ -136,6 +141,12 @@ public struct ClockStyle: Codable, Equatable, Sendable {
     public var prefix = ""
     // suffix is text or emoji shown after the clock, as typed.
     public var suffix = ""
+    // language is the locale identifier the day and month names are written in, or empty to follow the Mac.
+    public var language = ""
+    // numerals chooses the digits.
+    public var numerals = Numerals.automatic
+    // calendar chooses the calendar the date is counted in.
+    public var calendar = ClockCalendar.automatic
 
     // defaultCustomPattern is the pattern a new custom style starts from.
     public static let defaultCustomPattern = "EEE d MMM  HH:mm"
@@ -163,6 +174,24 @@ public struct ClockStyle: Codable, Equatable, Sendable {
         textCase = try c.decodeIfPresent(TextCase.self, forKey: .textCase) ?? d.textCase
         prefix = try c.decodeIfPresent(String.self, forKey: .prefix) ?? d.prefix
         suffix = try c.decodeIfPresent(String.self, forKey: .suffix) ?? d.suffix
+        language = try c.decodeIfPresent(String.self, forKey: .language) ?? d.language
+        numerals = try c.decodeIfPresent(Numerals.self, forKey: .numerals) ?? d.numerals
+        calendar = try c.decodeIfPresent(ClockCalendar.self, forKey: .calendar) ?? d.calendar
+    }
+
+    // locale returns base with the style's language, numerals, and calendar applied.
+    public func locale(base: Locale) -> Locale {
+        guard !language.isEmpty || numerals != .automatic || calendar != .automatic else {
+            return base
+        }
+        var components = Locale.Components(locale: language.isEmpty ? base : Locale(identifier: language))
+        if let identifier = numerals.identifier {
+            components.numberingSystem = Locale.NumberingSystem(identifier)
+        }
+        if let identifier = calendar.identifier {
+            components.calendar = identifier
+        }
+        return Locale(components: components)
     }
 
     // timePattern is the date format for the time alone.
@@ -254,16 +283,18 @@ public final class ClockFormatter {
     private let locale: Locale
 
     // init prepares the formatters for the style in the given locale and local time zone.
-    public init(style: ClockStyle, locale: Locale = .current, zone: TimeZone = .current) {
+    public init(style: ClockStyle, locale base: Locale = .current, zone: TimeZone = .current) {
+        let locale = style.locale(base: base)
         let lowerMeridiem = !style.usesCustomPattern && style.meridiem == .lower
         main = Self.formatter(locale: locale, zone: zone, lowerMeridiem: lowerMeridiem)
-        if !style.usesCustomPattern, style.dateStyle == .isoWeek {
+        if !style.usesCustomPattern, style.dateStyle.isISO {
             var calendar = Calendar(identifier: .iso8601)
             calendar.locale = locale
             calendar.timeZone = zone
             main.calendar = calendar
         }
-        main.dateFormat = style.pattern(locale: locale)
+        let pattern = style.pattern(locale: locale)
+        main.dateFormat = style.usesCustomPattern ? pattern : Self.fittingYear(pattern, to: main.calendar.identifier)
         if !style.secondZone.isEmpty, let other = TimeZone(identifier: style.secondZone) {
             let f = Self.formatter(locale: locale, zone: other, lowerMeridiem: lowerMeridiem)
             f.dateFormat = style.timePattern
@@ -276,6 +307,16 @@ public final class ClockFormatter {
         prefix = style.prefix.trimmingCharacters(in: .whitespaces)
         suffix = style.suffix.trimmingCharacters(in: .whitespaces)
         self.locale = locale
+    }
+
+    // fittingYear rewrites a four-digit year for calendars that do not count years that way, so the Japanese
+    // calendar reads "Reiwa 8" rather than "0008" and the Chinese calendar names its year in the cycle.
+    private static func fittingYear(_ pattern: String, to calendar: Calendar.Identifier) -> String {
+        switch calendar {
+        case .japanese: pattern.replacingOccurrences(of: "yyyy", with: "G y")
+        case .chinese: pattern.replacingOccurrences(of: "yyyy", with: "U")
+        default: pattern
+        }
     }
 
     // formatter builds a date formatter for a locale and zone, with lowercase AM and PM when asked.

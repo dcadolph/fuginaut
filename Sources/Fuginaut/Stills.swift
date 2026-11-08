@@ -45,8 +45,10 @@ enum Stills {
         looks[.format]?.style.separator = .dot
         looks[.format]?.style.meridiem = .lower
         looks[.format]?.style.prefix = "🚀"
-        looks[.format]?.style.secondZone = "Asia/Tokyo"
-        looks[.format]?.style.secondZoneLabel = "TYO"
+        looks[.world]?.style.numerals = .devanagari
+        looks[.world]?.style.calendar = .gregorian
+        looks[.world]?.style.secondZone = "Asia/Tokyo"
+        looks[.world]?.style.secondZoneLabel = "TYO"
         let login = LoginItem()
         let release = Release(
             version: ReleaseVersion("9.9.9")!, page: URL(string: "https://github.com/dcadolph/fuginaut/releases")!)
