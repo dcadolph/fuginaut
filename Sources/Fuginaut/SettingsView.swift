@@ -306,7 +306,7 @@ struct SettingsView: View {
                             Divider()
                         }
                         ForEach(Self.styleGroups[index], id: \.self) { style in
-                            Text(Self.styleTitle(style)).tag(style)
+                            Text(Self.styleTitle(style, in: worldStyle)).tag(style)
                         }
                     }
                 }
@@ -376,7 +376,7 @@ struct SettingsView: View {
             Row("Between") {
                 Picker("Between", selection: $store.settings.style.separator) {
                     ForEach(Separator.allCases, id: \.self) { separator in
-                        Text(Self.separatorTitle(separator)).tag(separator)
+                        Text(Self.separatorTitle(separator, in: worldStyle)).tag(separator)
                     }
                 }
                 .labelsHidden()
@@ -417,14 +417,14 @@ struct SettingsView: View {
         Menu {
             Section("Examples") {
                 ForEach(Self.patternExamples, id: \.self) { example in
-                    Button(Self.sample(pattern: example)) {
+                    Button(Self.sample(pattern: example, in: worldStyle)) {
                         store.settings.style.customPattern = example
                     }
                 }
             }
             Section("Add") {
                 ForEach(Self.patternLetters, id: \.letters) { item in
-                    Button(item.name + "  ·  " + Self.sample(pattern: item.letters)) {
+                    Button(item.name + "  ·  " + Self.sample(pattern: item.letters, in: worldStyle)) {
                         addToPattern(item.letters)
                     }
                 }
@@ -475,7 +475,7 @@ struct SettingsView: View {
             Row("Numerals", detail: "Writes the digits.") {
                 Picker("Numerals", selection: $store.settings.style.numerals) {
                     ForEach(Numerals.allCases, id: \.self) { numerals in
-                        Text(Self.numeralsTitle(numerals)).tag(numerals)
+                        Text(Self.numeralsTitle(numerals, in: worldStyle)).tag(numerals)
                     }
                 }
                 .labelsHidden()
@@ -485,7 +485,7 @@ struct SettingsView: View {
             Row("Calendar", detail: "Counts the date. ISO styles stay Gregorian.") {
                 Picker("Calendar", selection: $store.settings.style.calendar) {
                     ForEach(ClockCalendar.allCases, id: \.self) { calendar in
-                        Text(Self.calendarTitle(calendar)).tag(calendar)
+                        Text(Self.calendarTitle(calendar, in: worldStyle)).tag(calendar)
                     }
                 }
                 .labelsHidden()
@@ -684,7 +684,7 @@ struct SettingsView: View {
         } set: { next in
             var style = store.settings.style
             if next == .custom, style.dateStyle != .custom, style.customPattern == ClockStyle.defaultCustomPattern {
-                style.customPattern = style.pattern(locale: .current)
+                style.customPattern = style.pattern(locale: style.locale(base: .current))
             }
             style.dateStyle = next
             store.settings.style = style
@@ -700,19 +700,31 @@ struct SettingsView: View {
         store.settings.style.customPattern = pattern + letters
     }
 
-    // sample formats the current time with a pattern.
-    private static func sample(pattern: String) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = pattern
-        return formatter.string(from: Date())
+    // worldStyle is the default style written in the chosen language, numerals, and calendar, so menu samples
+    // read the way the clock will.
+    private var worldStyle: ClockStyle {
+        let style = store.settings.style
+        var world = ClockStyle()
+        world.language = style.language
+        world.numerals = style.numerals
+        world.calendar = style.calendar
+        return world
+    }
+
+    // sample formats the current time with a pattern in the world style.
+    private static func sample(pattern: String, in world: ClockStyle) -> String {
+        var sample = world
+        sample.dateStyle = .custom
+        sample.customPattern = pattern
+        return ClockFormatter(style: sample).string(Date())
     }
 
     // numeralsTitle names digits with the current time written in them.
-    private static func numeralsTitle(_ numerals: Numerals) -> String {
+    private static func numeralsTitle(_ numerals: Numerals, in world: ClockStyle) -> String {
         guard numerals != .automatic else {
             return numerals.title
         }
-        var sample = ClockStyle()
+        var sample = world
         sample.numerals = numerals
         sample.dateStyle = .custom
         sample.customPattern = "h:mm"
@@ -720,11 +732,11 @@ struct SettingsView: View {
     }
 
     // calendarTitle names a calendar with today's date counted in it.
-    private static func calendarTitle(_ calendar: ClockCalendar) -> String {
+    private static func calendarTitle(_ calendar: ClockCalendar, in world: ClockStyle) -> String {
         guard calendar != .automatic else {
             return calendar.title
         }
-        var sample = ClockStyle()
+        var sample = world
         sample.calendar = calendar
         sample.dateStyle = .withYear
         sample.showWeekday = false
@@ -732,9 +744,15 @@ struct SettingsView: View {
         return calendar.title + "  ·  " + ClockFormatter(style: sample).string(Date())
     }
 
-    // separatorTitle names what sits between the day and the time.
-    private static func separatorTitle(_ separator: Separator) -> String {
-        switch separator {
+    // separatorTitle names what sits between the day and the time, with the word at in the world style's
+    // language when it is not English.
+    private static func separatorTitle(_ separator: Separator, in world: ClockStyle) -> String {
+        if separator == .at {
+            let pattern = separator.pattern(locale: world.locale(base: .current)).trimmingCharacters(in: .whitespaces)
+            let word = pattern.isEmpty ? "" : sample(pattern: pattern, in: world)
+            return word.isEmpty || word == "at" ? "The word at" : "The word at  ·  " + word
+        }
+        return switch separator {
         case .spaces: "Two spaces"
         case .dot: "Dot  ·"
         case .bar: "Bar  |"
@@ -745,12 +763,12 @@ struct SettingsView: View {
         }
     }
 
-    // styleTitle names a date style with an example from today.
-    private static func styleTitle(_ style: DateStyle) -> String {
+    // styleTitle names a date style with an example from today in the world style.
+    private static func styleTitle(_ style: DateStyle, in world: ClockStyle) -> String {
         guard style != .custom else {
             return "Custom pattern"
         }
-        var sample = ClockStyle()
+        var sample = world
         sample.dateStyle = style
         sample.showTime = false
         let name: String =
