@@ -32,14 +32,17 @@ final class LoginItem {
     }
 
     // configureOnFirstLaunch turns launch at login on the first time the app runs from Applications. Builds
-    // run from anywhere else are never registered, and later launches leave the user's choice alone.
+    // run from anywhere else are never registered, and later launches leave the user's choice alone. The store
+    // build skips the registration, because App Review requires consent before an app opens at login.
     func configureOnFirstLaunch() {
-        let defaults = UserDefaults.standard
-        let installed = Bundle.main.bundleURL.path.hasPrefix("/Applications/")
-        if installed, !defaults.bool(forKey: Self.configuredKey) {
-            setEnabled(true)
-            defaults.set(true, forKey: Self.configuredKey)
-        }
+        #if !FUGINAUT_STORE
+            let defaults = UserDefaults.standard
+            let installed = Bundle.main.bundleURL.path.hasPrefix("/Applications/")
+            if installed, !defaults.bool(forKey: Self.configuredKey) {
+                setEnabled(true)
+                defaults.set(true, forKey: Self.configuredKey)
+            }
+        #endif
         refresh()
     }
 
