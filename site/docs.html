@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fuginaut docs</title>
+<meta name="description" content="The whole guide to Fuginaut: every tab, setting, and option, and how the Mac App Store version differs from the Homebrew and download versions.">
+<link rel="canonical" href="https://fuginaut.com/docs">
+<meta name="color-scheme" content="dark light">
+<link rel="icon" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta property="og:title" content="Fuginaut docs">
+<meta property="og:description" content="Every tab, setting, and option in Fuginaut.">
+<meta property="og:url" content="https://fuginaut.com/docs">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://fuginaut.com/assets/social.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="w">
+    <a class="brand" href="/"><img src="/assets/favicon.png" alt="" width="30" height="30">Fuginaut</a>
+    <nav>
+      <a href="/docs" aria-current="page">Docs</a>
+      <a href="/privacy/">Privacy</a>
+      <a href="https://github.com/dcadolph/fuginaut">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<div class="docs">
+<aside class="docs-side">
+  <label class="docs-search"><span class="sr">Search the docs</span><input id="q" type="search" placeholder="Search the docs" autocomplete="off"></label>
+  <p class="docs-count" id="count" aria-live="polite"></p>
+  <ul class="docs-toc" id="toc">
+    <li><a href="#start">Getting started</a></li>
+    <li><a href="#eclipse">The eclipse icon</a></li>
+    <li><a href="#size">Size</a></li>
+    <li><a href="#text">Text</a></li>
+    <li><a href="#color">Color</a></li>
+    <li><a href="#format">Format</a></li>
+    <li><a href="#patterns">Custom patterns</a></li>
+    <li><a href="#world">World</a></li>
+    <li><a href="#zone">Second time zone</a></li>
+    <li><a href="#general">General</a></li>
+    <li><a href="#displays">Displays and notches</a></li>
+    <li><a href="#versions">App Store and download versions</a></li>
+    <li><a href="#reset">Reset and uninstall</a></li>
+    <li><a href="#help">More help</a></li>
+  </ul>
+</aside>
+
+<main class="docs-main">
+<h1>The whole guide.</h1>
+<p>Everything Fuginaut does, tab by tab. Press <kbd>/</kbd> to search.</p>
+<p class="docs-none" id="none" hidden>Nothing matches that. Try a shorter word.</p>
+
+<section id="start">
+<h2>Getting started</h2>
+<p>Fuginaut runs on Apple silicon and Intel Macs with macOS 14 or later. It asks for no permissions and has no account.</p>
+<ul>
+  <li><b>Mac App Store:</b> coming soon.</li>
+  <li><b>Homebrew:</b> run <code>brew install --cask dcadolph/tap/fuginaut</code>.</li>
+  <li><b>Download:</b> get <a href="https://github.com/dcadolph/fuginaut/releases/latest/download/fuginaut_macos_universal.dmg">the disk image</a>, open it, and drag Fuginaut to Applications.</li>
+</ul>
+<p>Open it and a clock appears at the center of the menu bar. There's no Dock icon and no window to manage. To open settings, click the clock or right-click the eclipse in the menu bar and pick <b>Settings…</b>. Every change shows in the live preview at the top of the window and on the real clock right away.</p>
+</section>
+
+<section id="eclipse">
+<h2>The eclipse icon</h2>
+<p>The eclipse in the menu bar is Fuginaut's icon. It glows amber while the clock is on and goes plain while it's off.</p>
+<ul>
+  <li><b>Click</b> turns the clock on or off.</li>
+  <li><b>Right-click or Control-click</b> opens the menu: <b>Turn Clock Off</b> or <b>Turn Clock On</b>, <b>Settings…</b>, and <b>Quit Fuginaut</b>. The Homebrew and download versions add <b>Check for Updates…</b>.</li>
+</ul>
+<p>If you hide the icon, open Fuginaut again from Applications to get back to settings, or click the clock if that's still on.</p>
+</section>
+
+<section id="size">
+<h2>Size</h2>
+<table>
+  <tr><th>Setting</th><th>What it does</th></tr>
+  <tr><td><b>Size</b></td><td>How big the clock reads, from 9 to 40 points. The default is 13.</td></tr>
+  <tr><td><b>Nudge</b></td><td>Moves the clock off the center of the bar, up to 600 points left or right, to clear a busy spot.</td></tr>
+</table>
+</section>
+
+<section id="text">
+<h2>Text</h2>
+<table>
+  <tr><th>Setting</th><th>Choices</th></tr>
+  <tr><td><b>Font</b></td><td>System, Rounded, Mono, Serif, or any font family installed on your Mac.</td></tr>
+  <tr><td><b>Weight</b></td><td>Regular, Medium, Semibold, or Bold.</td></tr>
+  <tr><td><b>Capitals</b></td><td>As written, ALL CAPS, or lowercase.</td></tr>
+</table>
+</section>
+
+<section id="color">
+<h2>Color</h2>
+<h3>Text color</h3>
+<p><b>Match the menu bar</b> is on by default, which draws white on dark menu bars and black on light ones. Pick a color to turn it off. You can pick from a grid of 24 swatches, type a hex value, or use the color wheel.</p>
+<h3>Backing</h3>
+<p>A backing keeps the text readable over busy wallpaper. <b>Style</b> is None, Shadow, or Pill. <b>Automatic color</b> uses the opposite of the text color. Turn it off to pick a backing color the same three ways.</p>
+</section>
+
+<section id="format">
+<h2>Format</h2>
+<h3>Date styles</h3>
+<p>The <b>Style</b> picker has sixteen styles, plus Custom pattern: Short, Long, Day first, Day first, long, With year, Long with year, Day first with year, Numeric, Numeric with year, Numeric, padded, Dotted, Numeric, day first, ISO, Compact ISO, ISO week, and Day of year.</p>
+<h3>Parts of the clock</h3>
+<table>
+  <tr><th>Setting</th><th>What it does</th></tr>
+  <tr><td><b>Weekday, Date, Time</b></td><td>Switches that show or hide each part.</td></tr>
+  <tr><td><b>Order</b></td><td>Date first or time first.</td></tr>
+  <tr><td><b>Between</b></td><td>What separates the date and time: spaces, a dot, a bar, a comma, a slash, a dash, or the word &ldquo;at&rdquo;.</td></tr>
+  <tr><td><b>24-hour time</b></td><td>Switches between 12-hour and 24-hour time.</td></tr>
+  <tr><td><b>AM and PM</b></td><td>PM, pm, or None, for 12-hour time.</td></tr>
+  <tr><td><b>Leading zero</b></td><td>Shows 09:05 instead of 9:05.</td></tr>
+  <tr><td><b>Seconds</b></td><td>Adds the seconds.</td></tr>
+  <tr><td><b>Before, After</b></td><td>Text or emoji on either side of the clock. Press Control-Command-Space for the emoji picker.</td></tr>
+</table>
+</section>
+
+<section id="patterns">
+<h2>Custom patterns</h2>
+<p>Choose <b>Custom pattern</b> in the Style picker to write your own pattern using <a href="https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table">Unicode date letters</a>. Put literal words in single quotes. Emoji work as typed. The menu beside the field holds ready examples and the common pattern letters, and the reset button returns to <code>EEE d MMM  HH:mm</code>.</p>
+<table>
+  <tr><th>Pattern</th><th>Writes</th></tr>
+  <tr><td><code>EEE d MMM  HH:mm</code></td><td>Sun 8 Nov  09:41</td></tr>
+  <tr><td><code>h:mm a '·' MMMM d</code></td><td>9:41 AM · November 8</td></tr>
+  <tr><td><code>HH:mm:ss zzz</code></td><td>09:41:00 CST</td></tr>
+  <tr><td><code>'Week' w '·' EEE HH:mm</code></td><td>Week 46 · Sun 09:41</td></tr>
+  <tr><td><code>🚀 EEE d MMM  HH:mm</code></td><td>🚀 Sun 8 Nov  09:41</td></tr>
+</table>
+</section>
+
+<section id="world">
+<h2>World</h2>
+<table>
+  <tr><th>Setting</th><th>What it does</th><th>Choices</th></tr>
+  <tr><td><b>Language</b></td><td>Writes the day and month names. Languages other than English use their own word order when the month is written as a word.</td><td>Automatic or one of 27 languages.</td></tr>
+  <tr><td><b>Numerals</b></td><td>Writes the digits.</td><td>Automatic, Western, Arabic-Indic, Persian, Devanagari, Bengali, Gurmukhi, Gujarati, Kannada, Malayalam, Tamil, Telugu, Tibetan, Thai, Lao, Burmese, Khmer, or Chinese.</td></tr>
+  <tr><td><b>Calendar</b></td><td>Counts the date. ISO styles stay Gregorian.</td><td>Automatic, Gregorian, Islamic, Islamic, civil, Islamic, Umm al-Qura, Hebrew, Persian, Indian national, Buddhist, Japanese, Chinese, Coptic, or Ethiopian.</td></tr>
+</table>
+<p>The languages are Arabic, Bengali, Chinese (Simplified and Traditional), Dutch, English (U.S. and U.K.), French, German, Greek, Hebrew, Hindi, Indonesian, Italian, Japanese, Korean, Persian, Polish, Portuguese, Russian, Spanish, Swedish, Thai, Turkish, Ukrainian, Urdu, and Vietnamese.</p>
+</section>
+
+<section id="zone">
+<h2>Second time zone</h2>
+<p>On the World tab, <b>Time zone</b> adds a second time beside the clock. Search the list by city, zone name, or UTC offset. <b>Label</b> sets the text beside that time, and it uses the zone's abbreviation if you leave it blank.</p>
+</section>
+
+<section id="general">
+<h2>General</h2>
+<table>
+  <tr><th>Setting</th><th>What it does</th></tr>
+  <tr><td><b>Displays</b></td><td>A switch for each connected display.</td></tr>
+  <tr><td><b>Show the clock</b></td><td>Turns the clock on or off everywhere, the same as clicking the eclipse.</td></tr>
+  <tr><td><b>Show when the menu bar hides</b></td><td>Keeps the clock up in full screen apps.</td></tr>
+  <tr><td><b>Click the clock to open settings</b></td><td>When off, clicks pass through the clock to whatever is under it.</td></tr>
+  <tr><td><b>Show menu bar icon</b></td><td>Shows or hides the eclipse.</td></tr>
+  <tr><td><b>Open at login</b></td><td>Starts Fuginaut when you log in. If macOS asks, allow it in System Settings, under General, then Login Items.</td></tr>
+</table>
+<p><b>Restore Defaults</b> and <b>Quit Fuginaut</b> are at the bottom of the tab, beside the version number.</p>
+</section>
+
+<section id="displays">
+<h2>Displays and notches</h2>
+<p>Fuginaut draws a clock on every display you leave on. While an external display is connected, a laptop's own screen starts with the clock off, because the clock is meant for big screens. A laptop on its own shows the clock. A choice you make in General always wins.</p>
+<p>On a screen with a notch, the clock slides beside the notch when it fits.</p>
+</section>
+
+<section id="versions">
+<h2>App Store and download versions</h2>
+<p>All the versions draw the same clock with the same settings. They differ in a few ways.</p>
+<table>
+  <tr><th></th><th>Mac App Store</th><th>Homebrew and download</th></tr>
+  <tr><td><b>Updates</b></td><td>The App Store handles them.</td><td>Checks GitHub a minute after launch, every six hours, and when you ask. It announces each new release once.</td></tr>
+  <tr><td><b>Network</b></td><td>No network access.</td><td>Requests to GitHub for the latest release. Turn off <b>Check for updates automatically</b> in General to send nothing until you ask.</td></tr>
+  <tr><td><b>Sandbox</b></td><td>Runs in Apple's sandbox.</td><td>Signed with a Developer ID and notarized by Apple.</td></tr>
+  <tr><td><b>Open at login</b></td><td>Off until you turn it on.</td><td>Turns on the first time it runs from Applications.</td></tr>
+</table>
+<p>Moving to the App Store version can carry over settings from a Homebrew or download install.</p>
+</section>
+
+<section id="reset">
+<h2>Reset and uninstall</h2>
+<p><b>Restore Defaults</b> in General puts every setting back except Open at login. To uninstall, quit Fuginaut and delete it from Applications, or run <code>brew uninstall --cask fuginaut</code> if you installed it with Homebrew.</p>
+</section>
+
+<section id="help">
+<h2>More help</h2>
+<p>Open an issue on <a href="https://github.com/dcadolph/fuginaut/issues">GitHub</a>. The source is there too, under the MIT license.</p>
+</section>
+</main>
+</div>
+
+<script>
+(function () {
+  var q = document.getElementById("q");
+  var count = document.getElementById("count");
+  var none = document.getElementById("none");
+  var sections = Array.prototype.slice.call(document.querySelectorAll(".docs-main section"));
+  var links = {};
+  Array.prototype.forEach.call(document.querySelectorAll("#toc a"), function (a) {
+    links[a.getAttribute("href").slice(1)] = a.parentNode;
+  });
+  q.addEventListener("input", function () {
+    var words = q.value.toLowerCase().split(/\s+/).filter(Boolean);
+    var shown = 0;
+    sections.forEach(function (s) {
+      var text = s.textContent.toLowerCase();
+      var hit = words.every(function (w) { return text.indexOf(w) !== -1; });
+      s.hidden = !hit;
+      if (links[s.id]) { links[s.id].hidden = !hit; }
+      if (hit) { shown++; }
+    });
+    none.hidden = shown !== 0;
+    count.textContent = words.length ? shown + (shown === 1 ? " section matches." : " sections match.") : "";
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "/" && document.activeElement !== q) { e.preventDefault(); q.focus(); }
+  });
+})();
+</script>
+</body>
+</html>

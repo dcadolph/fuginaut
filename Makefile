@@ -37,7 +37,7 @@ STORE_ENTITLEMENTS := Fuginaut-store.entitlements
 SIGNED_ENTITLEMENTS := .build/store/Fuginaut.entitlements
 PROFILE_PLIST := .build/store/profile.plist
 
-.PHONY: build test test-store lint format app zip dmg run sandbox store-check store-preflight appstore clean
+.PHONY: build test test-store lint format app zip dmg run sandbox store-check store-preflight appstore site clean
 
 build:
 	swift build -Xswiftc -warnings-as-errors
@@ -125,6 +125,10 @@ appstore: store-preflight
 		|| { echo "$(STORE_APP) is not signed by team $(TEAM_ID)" >&2; exit 1; }
 	rm -f $(PKG)
 	productbuild --component $(STORE_APP) /Applications --sign "$(INSTALLER_ID)" $(PKG)
+
+# site publishes fuginaut.com and www.fuginaut.com from wrangler.jsonc.
+site:
+	wrangler deploy
 
 clean:
 	rm -rf .build

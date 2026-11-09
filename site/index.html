@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fuginaut: a second clock at the center of your menu bar</title>
+<meta name="description" content="A free Mac app that draws a second clock at the center of the menu bar on every display. Any font, color, date style, language, numerals, and calendar.">
+<link rel="canonical" href="https://fuginaut.com/">
+<meta name="color-scheme" content="dark light">
+<link rel="icon" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta property="og:title" content="Fuginaut">
+<meta property="og:description" content="A second clock at the center of your menu bar. Free for Mac.">
+<meta property="og:url" content="https://fuginaut.com/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://fuginaut.com/assets/social.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="w">
+    <a class="brand" href="/"><img src="/assets/favicon.png" alt="" width="30" height="30">Fuginaut</a>
+    <nav>
+      <a href="/docs">Docs</a>
+      <a href="/privacy/">Privacy</a>
+      <a href="https://github.com/dcadolph/fuginaut">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="hero">
+  <div class="w">
+    <p class="hook">Free for Mac</p>
+    <h1>A second clock at the <em>center</em> of your menu bar.</h1>
+    <div class="intro">
+      <p class="lede">Apple's clock sits in the far right corner of the screen. On a wide monitor, that's a long way from whatever you're working on. Fuginaut draws a second clock in the middle of the menu bar on every display, where a glance finds it.</p>
+      <div class="cta">
+        <span class="btn soon" aria-disabled="true">Coming soon to the Mac App Store</span>
+        <a class="btn" href="https://github.com/dcadolph/fuginaut/releases/latest/download/fuginaut_macos_universal.dmg">Download for Mac</a>
+        <button class="copy" type="button" data-copy="brew install --cask dcadolph/tap/fuginaut" aria-label="Copy the Homebrew install command"><code>brew install --cask dcadolph/tap/fuginaut</code><span data-copied>Copy</span></button>
+        <p class="fine">macOS 14 or later, on Apple silicon and Intel. No account, and nothing collected.</p>
+      </div>
+    </div>
+
+    <figure class="stage" aria-label="A wide menu bar with Fuginaut's clock at the center and Apple's clock at the far right, showing your current time">
+      <div class="bar" aria-hidden="true">
+        <span class="stubs"><i></i><i class="wide"></i><i></i><i></i></span>
+        <span class="center" id="hero-clock">Sun Nov 8&nbsp;&nbsp;9:41 AM</span>
+        <span class="right"><svg class="ring" viewBox="0 0 20 20" width="18" height="18"><circle cx="10" cy="10" r="7.2"/></svg><span id="apple-clock">Sun 9:41 AM</span></span>
+      </div>
+      <div class="sky" aria-hidden="true">
+        <span class="tag tag-center">Fuginaut</span>
+        <span class="tag tag-right">Apple's clock</span>
+        <img class="naut" src="/assets/astronaut.png" alt="" width="720" height="720">
+      </div>
+    </figure>
+  </div>
+</section>
+
+<section class="play" id="try">
+  <div class="w">
+    <h2>Try one on.</h2>
+    <p class="sec-lede">This bar shows your own time. Your browser writes the words here, so a few may differ slightly from the app, which has many more options.</p>
+    <div class="playbox">
+      <div class="bar play-bar" id="play-bar" aria-live="off">
+        <span class="stubs" aria-hidden="true"><i></i><i class="wide"></i></span>
+        <span class="center"><bdi id="play-clock">Sun Nov 8&nbsp;&nbsp;9:41 AM</bdi></span>
+        <span class="right" aria-hidden="true"><svg class="ring" viewBox="0 0 20 20" width="18" height="18"><circle cx="10" cy="10" r="7.2"/></svg></span>
+      </div>
+      <form class="controls" id="play-form">
+        <label>Date style
+          <select name="style">
+            <option value="short">Short</option>
+            <option value="long">Long</option>
+            <option value="year">With year</option>
+            <option value="numeric">Numeric</option>
+            <option value="iso">ISO</option>
+            <option value="none">Time only</option>
+          </select>
+        </label>
+        <label>Language
+          <select name="lang">
+            <option value="en-US">English</option>
+            <option value="ar">Arabic</option>
+            <option value="zh-Hans">Chinese</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="he">Hebrew</option>
+            <option value="hi">Hindi</option>
+            <option value="ja">Japanese</option>
+            <option value="ko">Korean</option>
+            <option value="fa">Persian</option>
+            <option value="ru">Russian</option>
+            <option value="es">Spanish</option>
+            <option value="th">Thai</option>
+          </select>
+        </label>
+        <label>Numerals
+          <select name="nu">
+            <option value="">Automatic</option>
+            <option value="latn">Western</option>
+            <option value="arab">Arabic-Indic</option>
+            <option value="deva">Devanagari</option>
+            <option value="beng">Bengali</option>
+            <option value="thai">Thai</option>
+            <option value="tibt">Tibetan</option>
+            <option value="hanidec">Chinese</option>
+          </select>
+        </label>
+        <label>Calendar
+          <select name="ca">
+            <option value="">Automatic</option>
+            <option value="gregory">Gregorian</option>
+            <option value="islamic">Islamic</option>
+            <option value="hebrew">Hebrew</option>
+            <option value="persian">Persian</option>
+            <option value="buddhist">Buddhist</option>
+            <option value="japanese">Japanese</option>
+            <option value="chinese">Chinese</option>
+          </select>
+        </label>
+        <label>Font
+          <select name="font">
+            <option value="system">System</option>
+            <option value="rounded">Rounded</option>
+            <option value="mono">Mono</option>
+            <option value="serif">Serif</option>
+          </select>
+        </label>
+        <label>Backing
+          <select name="backing">
+            <option value="none">None</option>
+            <option value="shadow">Shadow</option>
+            <option value="pill">Pill</option>
+          </select>
+        </label>
+        <fieldset class="swatches">
+          <legend>Color</legend>
+          <label style="--c:#ffffff"><input type="radio" name="color" value="#ffffff" checked><span class="sr">White</span></label>
+          <label style="--c:#f5ebd1"><input type="radio" name="color" value="#f5ebd1"><span class="sr">Cream</span></label>
+          <label style="--c:#ffad1a"><input type="radio" name="color" value="#ffad1a"><span class="sr">Amber</span></label>
+          <label style="--c:#ff453a"><input type="radio" name="color" value="#ff453a"><span class="sr">Red</span></label>
+          <label style="--c:#bf5af2"><input type="radio" name="color" value="#bf5af2"><span class="sr">Purple</span></label>
+          <label style="--c:#64d2ff"><input type="radio" name="color" value="#64d2ff"><span class="sr">Sky blue</span></label>
+          <label style="--c:#30d158"><input type="radio" name="color" value="#30d158"><span class="sr">Green</span></label>
+        </fieldset>
+        <div class="checks">
+          <label><input type="checkbox" name="h24"> 24-hour</label>
+          <label><input type="checkbox" name="seconds"> Seconds</label>
+          <label><input type="checkbox" name="caps"> ALL CAPS</label>
+          <label><input type="checkbox" name="tokyo"> Tokyo too</label>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="feature">
+  <div class="w split">
+    <div class="copy-col">
+      <p class="kicker">Size and position</p>
+      <h2>Right where you look.</h2>
+      <p>The clock sits at the center of the menu bar on every display. Size runs from 9 to 40 points, and a nudge moves it up to 600 points either way if something else already lives there.</p>
+      <p>On a screen with a notch, the clock slides beside the notch when it fits. While an external display is connected, a laptop's own screen starts with the clock off, and you can turn it on from General.</p>
+    </div>
+    <picture class="shot">
+      <source srcset="/assets/settings-size-light.png" media="(prefers-color-scheme: light)">
+      <img src="/assets/settings-size-dark.png" alt="The Size tab, with a slider for the clock's size and a nudge off the center of the bar" width="540" height="408" loading="lazy">
+    </picture>
+  </div>
+</section>
+
+<section class="feature">
+  <div class="w split flip">
+    <div class="copy-col">
+      <p class="kicker">Text</p>
+      <h2>Any font on your Mac.</h2>
+      <p>Pick System, Rounded, Mono, or Serif, or any font family you have installed. Choose from four weights, and write the clock as written, in ALL CAPS, or in lowercase.</p>
+    </div>
+    <picture class="shot">
+      <source srcset="/assets/settings-text-light.png" media="(prefers-color-scheme: light)">
+      <img src="/assets/settings-text-dark.png" alt="The Text tab, with pickers for the font, its weight, and capitals" width="540" height="368" loading="lazy">
+    </picture>
+  </div>
+</section>
+
+<section class="feature">
+  <div class="w split">
+    <div class="copy-col">
+      <p class="kicker">Color</p>
+      <h2>Match the bar, or don't.</h2>
+      <p>By default the clock is white on a dark menu bar and black on a light one. Pick your own from 24 swatches, a hex value, or the color wheel.</p>
+      <p>A shadow or a pill behind the text keeps it readable over busy wallpaper. The backing picks a contrasting color on its own, or you can choose one the same three ways.</p>
+    </div>
+    <picture class="shot">
+      <source srcset="/assets/settings-color-light.png" media="(prefers-color-scheme: light)">
+      <img src="/assets/settings-color-dark.png" alt="The Color tab, with a grid of swatches, a hex field, and the color wheel for the text and its backing" width="540" height="547" loading="lazy">
+    </picture>
+  </div>
+</section>
+
+<section class="feature">
+  <div class="w split flip">
+    <div class="copy-col">
+      <p class="kicker">Format</p>
+      <h2>Sixteen date styles, or write your own.</h2>
+      <p>Short, long, day first, with the year, numeric, dotted, ISO, ISO week, day of year, and more. Switches show or hide the weekday, date, and time, and put the date or the time first, with seven choices for what goes between them.</p>
+      <p>The time can be 12-hour or 24-hour, with or without seconds, a leading zero, and PM, pm, or neither. Text or emoji can sit before and after the clock. For anything else, a custom pattern comes with ready examples and a menu of pattern letters.</p>
+    </div>
+    <picture class="shot">
+      <source srcset="/assets/settings-format-light.png" media="(prefers-color-scheme: light)">
+      <img src="/assets/settings-format-dark.png" alt="The Format tab, with a date style picker and switches for the weekday, date, time, and order" width="540" height="547" loading="lazy">
+    </picture>
+  </div>
+  <div class="w wall" tabindex="0" role="region" aria-label="Six clock looks">
+    <img src="/assets/styles-wall.jpg" alt="Six clock looks: amber on a navy pill, mono ISO in 24-hour time, rounded with a rocket emoji, serif spelled out, all caps with seconds, and time only in big bold amber" width="1400" height="634" loading="lazy">
+  </div>
+</section>
+
+<section class="feature">
+  <div class="w split">
+    <div class="copy-col">
+      <p class="kicker">World</p>
+      <h2>Your language, your numerals, your calendar.</h2>
+      <p>Fuginaut offers 27 languages, 17 sets of numerals, and 12 calendars, and you can mix them freely. Languages other than English use their own word order when the month is written as a word.</p>
+      <p>A second time zone comes from a list you search by city, zone name, or UTC offset, with a label of your own beside it.</p>
+    </div>
+    <picture class="shot">
+      <source srcset="/assets/settings-world-light.png" media="(prefers-color-scheme: light)">
+      <img src="/assets/settings-world-dark.png" alt="The World tab, with pickers for language, numerals, and calendar, and a second time zone set to Tokyo" width="540" height="547" loading="lazy">
+    </picture>
+  </div>
+  <div class="w wall" tabindex="0" role="region" aria-label="One moment written seven ways">
+    <img src="/assets/world-wall.jpg" alt="One moment written seven ways: Arabic with the Islamic calendar, Chinese lunisolar, Hebrew, Hindi with the Indian national calendar, Japanese with the imperial era, Persian with Solar Hijri, and Thai with the Buddhist calendar" width="1400" height="656" loading="lazy">
+  </div>
+</section>
+
+<section class="feature">
+  <div class="w split flip">
+    <div class="copy-col">
+      <p class="kicker">General</p>
+      <h2>It stays out of your way.</h2>
+      <p>Click the eclipse in the menu bar to turn the clock on and off. It glows amber while the clock is on and goes plain while it's off. Right-click it for the menu.</p>
+      <p>Click the clock to open settings, or turn that off so clicks pass straight through. Choose which displays show it, keep it up in full screen apps, hide the menu bar icon, and open at login.</p>
+    </div>
+    <picture class="shot">
+      <source srcset="/assets/settings-general-light.png" media="(prefers-color-scheme: light)">
+      <img src="/assets/settings-general-dark.png" alt="The General tab, with switches for each display and for how the clock behaves" width="540" height="513" loading="lazy">
+    </picture>
+  </div>
+</section>
+
+<section class="watch">
+  <div class="w">
+    <h2>See it in 40 seconds.</h2>
+    <video controls preload="none" poster="/assets/poster.jpg" width="1920" height="1080">
+      <source src="/assets/promo.mp4" type="video/mp4">
+      <track kind="captions" src="/assets/promo.vtt" srclang="en" label="English">
+    </video>
+  </div>
+</section>
+
+<section class="quiet">
+  <div class="w">
+    <h2>No permissions. Nothing collected.</h2>
+    <p class="sec-lede">Fuginaut asks for no permissions and has no account. The Mac App Store version has no network access at all. The Homebrew and download versions ask GitHub for the latest release a minute after launch and every six hours, and you can turn that check off. <a href="/privacy/">Read the privacy policy.</a></p>
+  </div>
+</section>
+
+<section class="get" id="get">
+  <div class="w">
+    <img src="/assets/astronaut.png" alt="" width="180" height="180" loading="lazy">
+    <h2>Free, and open source.</h2>
+    <div class="cta">
+      <span class="btn soon" aria-disabled="true">Coming soon to the Mac App Store</span>
+      <a class="btn" href="https://github.com/dcadolph/fuginaut/releases/latest/download/fuginaut_macos_universal.dmg">Download for Mac</a>
+      <button class="copy" type="button" data-copy="brew install --cask dcadolph/tap/fuginaut" aria-label="Copy the Homebrew install command"><code>brew install --cask dcadolph/tap/fuginaut</code><span data-copied>Copy</span></button>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="w">
+    <p>The name blends <i>tempus fugit</i>, Latin for &ldquo;time flies,&rdquo; with the -naut in astronaut.</p>
+    <p class="links"><a href="/docs">Docs</a><a href="/privacy/">Privacy</a><a href="https://github.com/dcadolph/fuginaut">GitHub</a><a href="https://github.com/dcadolph/fuginaut/issues">Support</a></p>
+    <p class="fine">&copy; 2026 Douglas Adolph. MIT licensed.</p>
+  </div>
+</footer>
+
+<script src="/app.js"></script>
+</body>
+</html>
