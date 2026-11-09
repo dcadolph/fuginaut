@@ -233,7 +233,70 @@ let worldCases: [WorldCase] = [
             $0.showTime = false
             $0.language = "en-GB"
         }, wantText: "Nov 4"),
+    WorldCase(  // Test 28: The word at in German.
+        name: "german at",
+        style: {
+            $0.separator = .at
+            $0.showWeekday = false
+            $0.language = "de"
+        }, wantText: "4. Nov. um 9:07 PM"),
+    WorldCase(  // Test 29: The word at in French, on a 24-hour clock.
+        name: "french at",
+        style: {
+            $0.separator = .at
+            $0.use24Hour = true
+            $0.showWeekday = false
+            $0.language = "fr"
+        }, wantText: "4 nov. à 21:07"),
+    WorldCase(  // Test 30: Japanese joins the day and time with no word.
+        name: "japanese at",
+        style: {
+            $0.separator = .at
+            $0.showWeekday = false
+            $0.language = "ja"
+        }, wantText: "11月4日 午後9:07"),
+    WorldCase(  // Test 31: Vietnamese puts its word before the time.
+        name: "vietnamese at",
+        style: {
+            $0.separator = .at
+            $0.use24Hour = true
+            $0.showWeekday = false
+            $0.language = "vi"
+        }, wantText: "4 thg 11 lúc 21:07"),
+    WorldCase(  // Test 32: Day of year in German.
+        name: "german day of year",
+        style: {
+            dateOnly(&$0, .dayOfYear)
+            $0.language = "de"
+        }, wantText: "Tag 308"),
+    WorldCase(  // Test 33: Day of year in Japanese puts the number first.
+        name: "japanese day of year",
+        style: {
+            dateOnly(&$0, .dayOfYear)
+            $0.language = "ja"
+        }, wantText: "308日目"),
+    WorldCase(  // Test 34: Day of year in Chinese wraps the number.
+        name: "chinese day of year",
+        style: {
+            dateOnly(&$0, .dayOfYear)
+            $0.language = "zh-Hans"
+        }, wantText: "第308天"),
 ]
+
+// testNoEnglishWordsInOtherLanguages checks that no offered language other than English writes "at" or "Day".
+@Test(arguments: ClockLanguage.all.filter { !$0.id.hasPrefix("en") })
+func testNoEnglishWordsInOtherLanguages(language: ClockLanguage) {
+    let at = worldText {
+        $0.separator = .at
+        $0.language = language.id
+    }
+    let day = worldText {
+        $0.dateStyle = .dayOfYear
+        $0.language = language.id
+    }
+    #expect(!at.contains(" at "), "\(at)")
+    #expect(!day.contains("Day"), "\(day)")
+}
 
 // testWorldText checks clock text for each world choice.
 @Test(arguments: worldCases)

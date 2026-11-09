@@ -82,11 +82,11 @@ public enum Separator: String, Codable, CaseIterable, Sendable {
     case slash
     // dash is a hyphen.
     case dash
-    // at is the word "at".
+    // at is the word "at", written in the clock's language.
     case at
 
-    // pattern is the separator as quoted date pattern text.
-    public var pattern: String {
+    // pattern returns the separator as quoted date pattern text for a locale.
+    public func pattern(locale: Locale) -> String {
         switch self {
         case .spaces: "  "
         case .dot: " · "
@@ -94,8 +94,41 @@ public enum Separator: String, Codable, CaseIterable, Sendable {
         case .comma: ", "
         case .slash: " / "
         case .dash: " - "
-        case .at: " 'at' "
+        case .at: Self.atPattern(locale: locale)
         }
+    }
+
+    // atPattern returns the text a language puts between a long date and its time, so German reads "um" and
+    // French reads "à". A language that joins them with no word, such as Japanese, gets that joining text.
+    static func atPattern(locale: Locale) -> String {
+        let english = " 'at' "
+        let f = DateFormatter()
+        f.locale = locale
+        f.dateStyle = .long
+        f.timeStyle = .short
+        let both = f.dateFormat ?? ""
+        f.timeStyle = .none
+        let date = f.dateFormat ?? ""
+        f.dateStyle = .none
+        f.timeStyle = .short
+        let time = f.dateFormat ?? ""
+        guard !date.isEmpty, !time.isEmpty, both.count > date.count + time.count else {
+            return english
+        }
+        if both.hasPrefix(date), both.hasSuffix(time) {
+            return String(both.dropFirst(date.count).dropLast(time.count))
+        }
+        guard let dateRange = both.range(of: date) else {
+            return english
+        }
+        var rest = both
+        rest.removeSubrange(dateRange)
+        guard let timeRange = rest.range(of: time) else {
+            return english
+        }
+        rest.removeSubrange(timeRange)
+        let word = rest.trimmingCharacters(in: .whitespaces)
+        return word.isEmpty ? "  " : " " + word + " "
     }
 }
 
@@ -264,7 +297,8 @@ public struct ClockStyle: Codable, Equatable, Sendable {
         let time = showTime ? timePattern(locale: locale) : nil
         switch (day, time) {
         case (let day?, let time?):
-            return order == .dateFirst ? day + separator.pattern + time : time + separator.pattern + day
+            let between = separator.pattern(locale: locale)
+            return order == .dateFirst ? day + between + time : time + between + day
         case (let day?, nil):
             return day
         case (nil, _):
@@ -313,8 +347,24 @@ public struct ClockStyle: Codable, Equatable, Sendable {
         case .iso: "yyyy-MM-dd"
         case .compactISO: "yyyyMMdd"
         case .isoWeek: "YYYY-'W'ww"
-        case .dayOfYear: "'Day' D"
+        case .dayOfYear: Self.dayOfYearPattern(locale: locale)
         }
+    }
+
+    // dayOfYearPatterns write "Day 308" in each offered language, by language code.
+    private static let dayOfYearPatterns = [
+        "ar": "'اليوم' D", "bn": "'দিন' D", "de": "'Tag' D", "el": "'ημέρα' D", "en": "'Day' D",
+        "es": "'día' D", "fa": "'روز' D", "fr": "'jour' D", "he": "'יום' D", "hi": "'दिन' D",
+        "id": "'hari ke-'D", "it": "'giorno' D", "ja": "D'日目'", "ko": "D'일째'", "nl": "'dag' D",
+        "pl": "'dzień' D", "pt": "'dia' D", "ru": "'день' D", "sv": "'dag' D", "th": "'วันที่' D",
+        "tr": "D'. gün'", "uk": "'день' D", "ur": "'دن' D", "vi": "'ngày thứ' D", "zh": "'第'D'天'",
+    ]
+
+    // dayOfYearPattern returns the day of year pattern for the locale's language, or the English one for a
+    // language not offered.
+    private static func dayOfYearPattern(locale: Locale) -> String {
+        let code = locale.language.languageCode?.identifier ?? "en"
+        return dayOfYearPatterns[code] ?? "'Day' D"
     }
 }
 
