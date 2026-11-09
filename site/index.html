@@ -28,6 +28,7 @@
       <a href="/docs">Docs</a>
       <a href="/privacy/">Privacy</a>
       <a href="https://github.com/dcadolph/fuginaut">GitHub</a>
+      <a href="https://github.com/dcadolph/fuginaut/issues">Support</a>
     </nav>
   </div>
 </header>
@@ -37,14 +38,12 @@
   <div class="w">
     <p class="hook">Free for Mac</p>
     <h1>A second clock at the <em>center</em> of your menu bar.</h1>
-    <div class="intro">
-      <p class="lede">Apple's clock sits in the far right corner of the screen. On a wide monitor, that's a long way from whatever you're working on. Fuginaut draws a second clock in the middle of the menu bar on every display, where a glance finds it.</p>
-      <div class="cta">
+    <p class="lede">Apple's clock sits in the far right corner of the screen. On a wide monitor, that's a long way from whatever you're working on. Fuginaut draws a second clock in the middle of the menu bar on every display, where a glance finds it.</p>
+    <div class="cta">
         <span class="btn soon" aria-disabled="true">Coming soon to the Mac App Store</span>
         <a class="btn" href="https://github.com/dcadolph/fuginaut/releases/latest/download/fuginaut_macos_universal.dmg">Download for Mac</a>
         <button class="copy" type="button" data-copy="brew install --cask dcadolph/tap/fuginaut" aria-label="Copy the Homebrew install command"><code>brew install --cask dcadolph/tap/fuginaut</code><span data-copied>Copy</span></button>
         <p class="fine">macOS 14 or later, on Apple silicon and Intel. No account, and nothing collected.</p>
-      </div>
     </div>
 
     <figure class="stage" aria-label="A wide menu bar with Fuginaut's clock at the center and Apple's clock at the far right, showing your current time">
@@ -62,10 +61,12 @@
   </div>
 </section>
 
-<section class="play" id="try">
+<section class="band lift play" id="try">
   <div class="w">
-    <h2>Try one on.</h2>
-    <p class="sec-lede">This bar shows your own time. Your browser writes the words here, so a few may differ slightly from the app, which has many more options.</p>
+    <div class="head">
+      <h2>Try one on.</h2>
+      <p class="sec-lede">This bar shows your own time. Your browser writes the words here, so a few may differ slightly from the app, which has many more options.</p>
+    </div>
     <div class="playbox">
       <div class="bar play-bar" id="play-bar" aria-live="off">
         <span class="stubs" aria-hidden="true"><i></i><i class="wide"></i></span>
@@ -139,6 +140,7 @@
             <option value="pill">Pill</option>
           </select>
         </label>
+        <div class="control-foot">
         <fieldset class="swatches">
           <legend>Color</legend>
           <label style="--c:#ffffff"><input type="radio" name="color" value="#ffffff" checked><span class="sr">White</span></label>
@@ -155,109 +157,162 @@
           <label><input type="checkbox" name="caps"> ALL CAPS</label>
           <label><input type="checkbox" name="tokyo"> Tokyo too</label>
         </div>
+        </div>
       </form>
     </div>
   </div>
 </section>
 
-<section class="feature">
+<section class="band feature">
   <div class="w split">
     <div class="copy-col">
       <p class="kicker">Size and position</p>
       <h2>Right where you look.</h2>
-      <p>The clock sits at the center of the menu bar on every display. Size runs from 9 to 40 points, and a nudge moves it up to 600 points either way if something else already lives there.</p>
-      <p>On a screen with a notch, the clock slides beside the notch when it fits. While an external display is connected, a laptop's own screen starts with the clock off, and you can turn it on from General.</p>
+      <p class="say">The clock sits at the center of the menu bar on every display.</p>
+      <dl class="facts">
+        <div><dt>Size</dt><dd>Anywhere from 9 to 40 points.</dd></div>
+        <div><dt>Nudge</dt><dd>Up to 600 points either way, if something else already lives there.</dd></div>
+        <div><dt>Notch</dt><dd>The clock slides beside the notch when it fits.</dd></div>
+        <div><dt>Laptops</dt><dd>A laptop's own screen starts with the clock off while an external display is connected. Turn it on from General.</dd></div>
+      </dl>
     </div>
-    <picture class="shot">
-      <source srcset="/assets/settings-size-light.png" media="(prefers-color-scheme: light)">
-      <img src="/assets/settings-size-dark.png" alt="The Size tab, with a slider for the clock's size and a nudge off the center of the bar" width="540" height="408" loading="lazy">
-    </picture>
+    <figure class="shot">
+      <figcaption class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>Fuginaut Settings</span></figcaption>
+      <picture>
+        <source srcset="/assets/settings-size-light.png" media="(prefers-color-scheme: light)">
+        <img src="/assets/settings-size-dark.png" alt="The Size tab, with a slider for the clock's size and a nudge off the center of the bar" width="540" height="363" loading="lazy">
+      </picture>
+    </figure>
   </div>
 </section>
 
-<section class="feature">
+<section class="band lift feature">
   <div class="w split flip">
     <div class="copy-col">
       <p class="kicker">Text</p>
       <h2>Any font on your Mac.</h2>
-      <p>Pick System, Rounded, Mono, or Serif, or any font family you have installed. Choose from four weights, and write the clock as written, in ALL CAPS, or in lowercase.</p>
+      <p class="say">Use one of the built-in looks, or any font family you have installed.</p>
+      <dl class="facts">
+        <div><dt>Font</dt><dd>System, Rounded, Mono, Serif, or your own.</dd></div>
+        <div><dt>Weight</dt><dd>Four to choose from.</dd></div>
+        <div><dt>Capitals</dt><dd>As written, ALL CAPS, or lowercase.</dd></div>
+      </dl>
     </div>
-    <picture class="shot">
-      <source srcset="/assets/settings-text-light.png" media="(prefers-color-scheme: light)">
-      <img src="/assets/settings-text-dark.png" alt="The Text tab, with pickers for the font, its weight, and capitals" width="540" height="368" loading="lazy">
-    </picture>
+    <figure class="shot">
+      <figcaption class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>Fuginaut Settings</span></figcaption>
+      <picture>
+        <source srcset="/assets/settings-text-light.png" media="(prefers-color-scheme: light)">
+        <img src="/assets/settings-text-dark.png" alt="The Text tab, with pickers for the font, its weight, and capitals" width="540" height="344" loading="lazy">
+      </picture>
+    </figure>
   </div>
 </section>
 
-<section class="feature">
+<section class="band feature">
   <div class="w split">
     <div class="copy-col">
       <p class="kicker">Color</p>
-      <h2>Match the bar, or don't.</h2>
-      <p>By default the clock is white on a dark menu bar and black on a light one. Pick your own from 24 swatches, a hex value, or the color wheel.</p>
-      <p>A shadow or a pill behind the text keeps it readable over busy wallpaper. The backing picks a contrasting color on its own, or you can choose one the same three ways.</p>
+      <h2>Match the bar,<br> or don't.</h2>
+      <p class="say">White on a dark menu bar and black on a light one, until you pick your own.</p>
+      <dl class="facts">
+        <div><dt>Color</dt><dd>24 swatches, a hex value, or the color wheel.</dd></div>
+        <div><dt>Backing</dt><dd>A shadow or a pill keeps the text readable over busy wallpaper.</dd></div>
+        <div><dt>Contrast</dt><dd>The backing picks a contrasting color on its own, or you choose one the same three ways.</dd></div>
+      </dl>
     </div>
-    <picture class="shot">
-      <source srcset="/assets/settings-color-light.png" media="(prefers-color-scheme: light)">
-      <img src="/assets/settings-color-dark.png" alt="The Color tab, with a grid of swatches, a hex field, and the color wheel for the text and its backing" width="540" height="547" loading="lazy">
-    </picture>
+    <figure class="shot">
+      <figcaption class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>Fuginaut Settings</span></figcaption>
+      <picture>
+        <source srcset="/assets/settings-color-light.png" media="(prefers-color-scheme: light)">
+        <img src="/assets/settings-color-dark.png" alt="The Color tab, with a grid of swatches, a hex field, and the color wheel for the text and its backing" width="540" height="656" loading="lazy">
+      </picture>
+    </figure>
   </div>
 </section>
 
-<section class="feature">
+<section class="band lift feature">
   <div class="w split flip">
     <div class="copy-col">
       <p class="kicker">Format</p>
       <h2>Sixteen date styles, or write your own.</h2>
-      <p>Short, long, day first, with the year, numeric, dotted, ISO, ISO week, day of year, and more. Switches show or hide the weekday, date, and time, and put the date or the time first, with seven choices for what goes between them.</p>
-      <p>The time can be 12-hour or 24-hour, with or without seconds, a leading zero, and PM, pm, or neither. Text or emoji can sit before and after the clock. For anything else, a custom pattern comes with ready examples and a menu of pattern letters.</p>
+      <p class="say">Short, long, day first, with the year, numeric, dotted, ISO, ISO week, day of year, and more.</p>
+      <dl class="facts">
+        <div><dt>Layout</dt><dd>Show or hide the weekday, date, and time, put either first, with seven choices for what goes between them.</dd></div>
+        <div><dt>Time</dt><dd>12-hour or 24-hour, with or without seconds, a leading zero, and PM, pm, or neither.</dd></div>
+        <div><dt>Extras</dt><dd>Text or emoji before and after the clock.</dd></div>
+        <div><dt>Custom</dt><dd>A pattern of your own, with ready examples and a menu of pattern letters.</dd></div>
+      </dl>
     </div>
-    <picture class="shot">
-      <source srcset="/assets/settings-format-light.png" media="(prefers-color-scheme: light)">
-      <img src="/assets/settings-format-dark.png" alt="The Format tab, with a date style picker and switches for the weekday, date, time, and order" width="540" height="547" loading="lazy">
-    </picture>
+    <figure class="shot">
+      <figcaption class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>Fuginaut Settings</span></figcaption>
+      <picture>
+        <source srcset="/assets/settings-format-light.png" media="(prefers-color-scheme: light)">
+        <img src="/assets/settings-format-dark.png" alt="The Format tab, with a date style picker and switches for the weekday, date, time, and order" width="540" height="747" loading="lazy">
+      </picture>
+    </figure>
   </div>
   <div class="w wall" tabindex="0" role="region" aria-label="Six clock looks">
     <img src="/assets/styles-wall.jpg" alt="Six clock looks: amber on a navy pill, mono ISO in 24-hour time, rounded with a rocket emoji, serif spelled out, all caps with seconds, and time only in big bold amber" width="1400" height="634" loading="lazy">
   </div>
 </section>
 
-<section class="feature">
+<section class="band feature">
   <div class="w split">
     <div class="copy-col">
       <p class="kicker">World</p>
       <h2>Your language, your numerals, your calendar.</h2>
-      <p>Fuginaut offers 27 languages, 17 sets of numerals, and 12 calendars, and you can mix them freely. Languages other than English use their own word order when the month is written as a word.</p>
-      <p>A second time zone comes from a list you search by city, zone name, or UTC offset, with a label of your own beside it.</p>
+      <p class="say">Mix them freely.</p>
+      <ul class="stats">
+        <li><b>27</b>languages</li>
+        <li><b>17</b>sets of numerals</li>
+        <li><b>12</b>calendars</li>
+      </ul>
+      <dl class="facts">
+        <div><dt>Word order</dt><dd>Languages other than English use their own word order when the month is written as a word.</dd></div>
+        <div><dt>Second zone</dt><dd>Search by city, zone name, or UTC offset, with a label of your own beside it.</dd></div>
+      </dl>
     </div>
-    <picture class="shot">
-      <source srcset="/assets/settings-world-light.png" media="(prefers-color-scheme: light)">
-      <img src="/assets/settings-world-dark.png" alt="The World tab, with pickers for language, numerals, and calendar, and a second time zone set to Tokyo" width="540" height="547" loading="lazy">
-    </picture>
+    <figure class="shot">
+      <figcaption class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>Fuginaut Settings</span></figcaption>
+      <picture>
+        <source srcset="/assets/settings-world-light.png" media="(prefers-color-scheme: light)">
+        <img src="/assets/settings-world-dark.png" alt="The World tab, with pickers for language, numerals, and calendar, and a second time zone set to Tokyo" width="540" height="496" loading="lazy">
+      </picture>
+    </figure>
   </div>
   <div class="w wall" tabindex="0" role="region" aria-label="One moment written seven ways">
     <img src="/assets/world-wall.jpg" alt="One moment written seven ways: Arabic with the Islamic calendar, Chinese lunisolar, Hebrew, Hindi with the Indian national calendar, Japanese with the imperial era, Persian with Solar Hijri, and Thai with the Buddhist calendar" width="1400" height="656" loading="lazy">
   </div>
 </section>
 
-<section class="feature">
+<section class="band lift feature">
   <div class="w split flip">
     <div class="copy-col">
       <p class="kicker">General</p>
       <h2>It stays out of your way.</h2>
-      <p>Click the eclipse in the menu bar to turn the clock on and off. It glows amber while the clock is on and goes plain while it's off. Right-click it for the menu.</p>
-      <p>Click the clock to open settings, or turn that off so clicks pass straight through. Choose which displays show it, keep it up in full screen apps, hide the menu bar icon, and open at login.</p>
+      <p class="say">Click the eclipse in the menu bar to turn the clock on and off.</p>
+      <dl class="facts">
+        <div><dt>Eclipse</dt><dd>Amber while the clock is on, plain while it's off. Right-click it for the menu.</dd></div>
+        <div><dt>Clicks</dt><dd>Click the clock to open settings, or let clicks pass straight through.</dd></div>
+        <div><dt>Displays</dt><dd>Choose which ones show it, and keep it up in full screen apps.</dd></div>
+        <div><dt>Quiet</dt><dd>Hide the menu bar icon, and open at login if you want to.</dd></div>
+      </dl>
     </div>
-    <picture class="shot">
-      <source srcset="/assets/settings-general-light.png" media="(prefers-color-scheme: light)">
-      <img src="/assets/settings-general-dark.png" alt="The General tab, with switches for each display and for how the clock behaves" width="540" height="513" loading="lazy">
-    </picture>
+    <figure class="shot">
+      <figcaption class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>Fuginaut Settings</span></figcaption>
+      <picture>
+        <source srcset="/assets/settings-general-light.png" media="(prefers-color-scheme: light)">
+        <img src="/assets/settings-general-dark.png" alt="The General tab, with switches for each display and for how the clock behaves" width="540" height="522" loading="lazy">
+      </picture>
+    </figure>
   </div>
 </section>
 
-<section class="watch">
+<section class="band watch">
   <div class="w">
-    <h2>See it in 40 seconds.</h2>
+    <div class="head">
+      <h2>See it in 40 seconds.</h2>
+    </div>
     <video controls preload="none" poster="/assets/poster.jpg" width="1920" height="1080">
       <source src="/assets/promo.mp4" type="video/mp4">
       <track kind="captions" src="/assets/promo.vtt" srclang="en" label="English">
@@ -265,14 +320,16 @@
   </div>
 </section>
 
-<section class="quiet">
+<section class="band lift quiet">
   <div class="w">
-    <h2>No permissions. Nothing collected.</h2>
-    <p class="sec-lede">Fuginaut asks for no permissions and has no account. The Mac App Store version has no network access at all. The Homebrew and download versions ask GitHub for the latest release a minute after launch and every six hours, and you can turn that check off. <a href="/privacy/">Read the privacy policy.</a></p>
+    <div class="head">
+      <h2>No permissions. Nothing collected.</h2>
+      <p class="sec-lede">Fuginaut asks for no permissions and has no account. The Mac App Store version has no network access at all. The Homebrew and download versions ask GitHub for the latest release a minute after launch and every six hours, and you can turn that check off. <a href="/privacy/">Read the privacy policy.</a></p>
+    </div>
   </div>
 </section>
 
-<section class="get" id="get">
+<section class="band get" id="get">
   <div class="w">
     <img src="/assets/astronaut.png" alt="" width="180" height="180" loading="lazy">
     <h2>Free, and open source.</h2>
