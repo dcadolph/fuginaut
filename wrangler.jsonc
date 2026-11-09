@@ -1,0 +1,16 @@
+{
+  "name": "fuginaut",
+  "main": "site-worker.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": false,
+  "assets": {
+    "directory": "site",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/assets/promo.mp4"]
+  },
+  "routes": [
+    { "pattern": "fuginaut.com", "custom_domain": true },
+    { "pattern": "www.fuginaut.com", "custom_domain": true }
+  ]
+}
