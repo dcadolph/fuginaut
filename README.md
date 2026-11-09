@@ -3,12 +3,18 @@
 <h1 align="center">Fuginaut</h1>
 
 <p align="center">
+  <a href="https://fuginaut.com"><img src="https://img.shields.io/badge/fuginaut.com-Download_for_Mac-ffad1a?style=for-the-badge&logo=apple&logoColor=black" alt="fuginaut.com: Download for Mac"></a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/macOS-14%2B-black" alt="macOS 14 or later">
   <img src="https://img.shields.io/badge/Swift-6-orange" alt="Swift 6">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license">
 </p>
 
 <p align="center"><strong>A second clock at the center of the menu bar.</strong></p>
+
+https://github.com/user-attachments/assets/b9d006a3-d3e7-4420-8428-9e54591b704d
 
 On a wide monitor, Apple's clock sits in the far right corner, a long way from where you are
 looking. Fuginaut puts a second clock at the center of the menu bar on every display, where a
@@ -17,8 +23,6 @@ glance finds it. Click it to open settings, or turn that off so clicks pass stra
 The clock is meant for big screens. While an external display is connected, a laptop's own screen
 starts with the clock off, and you can turn it on from General. A laptop on its own shows the
 clock. On a screen with a notch, the clock slides beside the notch instead of hiding under it.
-
-<p align="center"><img src="art/settings.png" width="540" alt="The settings window with a live preview of the menu bar over a cream and black two-tone, and the Color tab with swatches, a hex field, and the color wheel"></p>
 
 ## Settings
 
