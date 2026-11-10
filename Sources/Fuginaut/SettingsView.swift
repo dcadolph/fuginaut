@@ -293,18 +293,7 @@ struct SettingsView: View {
     private var dayCard: some View {
         Card("Day and time") {
             Row("Style") {
-                Picker("Style", selection: dateStyle) {
-                    ForEach(Self.styleGroups.indices, id: \.self) { index in
-                        if index > 0 {
-                            Divider()
-                        }
-                        ForEach(Self.styleGroups[index], id: \.self) { style in
-                            Text(Self.styleTitle(style, in: worldStyle)).tag(style)
-                        }
-                    }
-                }
-                .labelsHidden()
-                .frame(width: 280)
+                AlignedPopUp(entries: styleEntries, selection: dateStyle, width: 360)
             }
             if store.settings.style.dateStyle == .custom {
                 RowDivider()
@@ -704,10 +693,24 @@ struct SettingsView: View {
         }
     }
 
-    // styleTitle names a date style with an example from today in the world style.
-    private static func styleTitle(_ style: DateStyle, in world: ClockStyle) -> String {
+    // styleEntries lists the style menu's rows, with a divider between groups.
+    private var styleEntries: [AlignedPopUpEntry<DateStyle>] {
+        var rows: [AlignedPopUpEntry<DateStyle>] = []
+        for (index, group) in Self.styleGroups.enumerated() {
+            if index > 0 {
+                rows.append(AlignedPopUpEntry(value: nil, name: "\(index)", example: ""))
+            }
+            for style in group {
+                rows.append(Self.styleEntry(style, in: worldStyle))
+            }
+        }
+        return rows
+    }
+
+    // styleEntry names a date style and gives an example from today in the world style.
+    private static func styleEntry(_ style: DateStyle, in world: ClockStyle) -> AlignedPopUpEntry<DateStyle> {
         guard style != .custom else {
-            return "Custom pattern"
+            return AlignedPopUpEntry(value: style, name: "Custom pattern", example: "")
         }
         var sample = world
         sample.dateStyle = style
@@ -732,7 +735,7 @@ struct SettingsView: View {
             case .dayOfYear: "Day of year"
             case .custom: "Custom"
             }
-        return name + "  ·  " + ClockFormatter(style: sample).string(Date())
+        return AlignedPopUpEntry(value: style, name: name, example: ClockFormatter(style: sample).string(Date()))
     }
 
     // familyChoices lists installed families, plus the chosen one if it is no longer installed.
