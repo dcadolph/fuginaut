@@ -76,7 +76,7 @@
 <p>The eclipse in the menu bar is Fuginaut's icon. It glows amber while the clock is on and goes plain while it's off.</p>
 <ul>
   <li><b>Click</b> turns the clock on or off.</li>
-  <li><b>Right-click or Control-click</b> opens the menu: <b>Turn Clock Off</b> or <b>Turn Clock On</b>, <b>Settings…</b>, and <b>Quit Fuginaut</b>. The Homebrew and download versions add <b>Check for Updates…</b>.</li>
+  <li><b>Right-click or Control-click</b> opens the menu: <b>Turn Clock Off</b> or <b>Turn Clock On</b>, <b>Settings…</b>, and <b>Quit Fuginaut</b>.</li>
 </ul>
 <p>If you hide the icon, open Fuginaut again from Applications to get back to settings, or click the clock if that's still on.</p>
 </section>
@@ -180,8 +180,8 @@
 <p>All the versions draw the same clock with the same settings. They differ in a few ways.</p>
 <table>
   <tr><th></th><th>Mac App Store</th><th>Homebrew and download</th></tr>
-  <tr><td><b>Updates</b></td><td>The App Store handles them.</td><td>Checks GitHub a minute after launch, every six hours, and when you ask. It announces each new release once.</td></tr>
-  <tr><td><b>Network</b></td><td>No network access.</td><td>Requests to GitHub for the latest release. Turn off <b>Check for updates automatically</b> in General to send nothing until you ask.</td></tr>
+  <tr><td><b>Updates</b></td><td>The App Store handles them.</td><td>Run <code>brew upgrade --cask fuginaut</code>, or download the new release.</td></tr>
+  <tr><td><b>Network</b></td><td>No network access.</td><td>No network requests.</td></tr>
   <tr><td><b>Sandbox</b></td><td>Runs in Apple's sandbox.</td><td>Signed with a Developer ID and notarized by Apple.</td></tr>
   <tr><td><b>Open at login</b></td><td>Off until you turn it on.</td><td>Turns on the first time it runs from Applications.</td></tr>
 </table>

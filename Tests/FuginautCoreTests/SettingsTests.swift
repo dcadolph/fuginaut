@@ -105,7 +105,6 @@ func testRoundTrip() throws {
         $0.showWhenBarHidden = true
         $0.showMenuIcon = false
         $0.clickOpensSettings = false
-        $0.checkUpdates = false
         $0.clockEnabled = false
         $0.style.language = "es"
         $0.style.numerals = .devanagari

@@ -16,37 +16,15 @@ final class StatusItemController: NSObject {
     private let clockItem = NSMenuItem(title: "", action: #selector(toggleClock), keyEquivalent: "")
     // lit is the state the icon was last drawn in, or nil before the first draw.
     private var lit: Bool?
-    #if !FUGINAUT_STORE
-        // updates checks for newer releases.
-        private let updates: UpdateMonitor
-        // updateItem checks for updates, or downloads one once a check finds it.
-        private let updateItem = NSMenuItem(title: "", action: #selector(updateChosen), keyEquivalent: "")
-    #endif
 
-    #if FUGINAUT_STORE
-        // init adds the icon and keeps it in step with the settings.
-        init(store: SettingsStore, openSettings: @escaping () -> Void) {
-            self.store = store
-            self.openSettings = openSettings
-            item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-            super.init()
-            setUp()
-        }
-    #else
-        // init adds the icon and keeps it in step with the settings and the update check.
-        init(store: SettingsStore, updates: UpdateMonitor, openSettings: @escaping () -> Void) {
-            self.store = store
-            self.openSettings = openSettings
-            self.updates = updates
-            item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-            super.init()
-            setUp()
-            refreshUpdateItem()
-            updates.onChange { [weak self] in
-                self?.refreshUpdateItem()
-            }
-        }
-    #endif
+    // init adds the icon and keeps it in step with the settings.
+    init(store: SettingsStore, openSettings: @escaping () -> Void) {
+        self.store = store
+        self.openSettings = openSettings
+        item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        super.init()
+        setUp()
+    }
 
     // setUp wires the icon, builds the menu, and follows the settings.
     private func setUp() {
@@ -59,10 +37,6 @@ final class StatusItemController: NSObject {
         let settings = NSMenuItem(title: "Settings…", action: #selector(settingsChosen), keyEquivalent: ",")
         settings.target = self
         menu.addItem(settings)
-        #if !FUGINAUT_STORE
-            updateItem.target = self
-            menu.addItem(updateItem)
-        #endif
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Quit Fuginaut", action: #selector(NSApp.terminate), keyEquivalent: "q"))
         refresh()
@@ -83,35 +57,6 @@ final class StatusItemController: NSObject {
         item.button?.toolTip = "Click to turn the clock \(on ? "off" : "on"). Right-click for the menu."
         clockItem.title = on ? "Turn Clock Off" : "Turn Clock On"
     }
-
-    #if !FUGINAUT_STORE
-        // refreshUpdateItem titles the update item for the latest check.
-        private func refreshUpdateItem() {
-            switch updates.status {
-            case .available(let release):
-                updateItem.title = "Download Fuginaut \(release.version)…"
-                updateItem.isEnabled = true
-            case .checking:
-                updateItem.title = "Checking for Updates…"
-                updateItem.isEnabled = false
-            case .unavailable:
-                updateItem.title = "Check for Updates…"
-                updateItem.isEnabled = false
-            case .unchecked, .upToDate, .failed:
-                updateItem.title = "Check for Updates…"
-                updateItem.isEnabled = true
-            }
-        }
-
-        // updateChosen opens an available release, or checks for one.
-        @objc private func updateChosen() {
-            if case .available = updates.status {
-                updates.openRelease()
-            } else {
-                updates.checkNow()
-            }
-        }
-    #endif
 
     // clicked opens the menu on a right-click or control-click and switches the clock on any other click.
     @objc private func clicked() {

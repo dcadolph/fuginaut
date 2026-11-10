@@ -50,16 +50,12 @@ while it is off.
   own word order. A second time zone comes from a list you search by
   city, zone name, or UTC offset.
 - **General:** whether the clock shows, which displays show it, whether clicking it opens settings or passes
-  through, whether it stays up in full screen apps, the menu bar icon, opening at login, and
-  checking for updates, except in the Mac App Store build.
+  through, whether it stays up in full screen apps, the menu bar icon, and opening at login.
 
-Fuginaut asks for no permissions. In the Homebrew and download builds, its only network request asks
-GitHub for the latest release, every six hours and when you pick Check for Updates. Turn the
-automatic check off in General and it sends nothing at all until you ask. A new release is announced
-once, with a link to download it or the Homebrew command to upgrade.
-
-The Mac App Store build runs in Apple's sandbox with no network access and sends nothing at all. The
-store handles its updates, and it opens at login only after you turn that on in General.
+Fuginaut asks for no permissions and makes no network requests. It sends nothing at all. The Mac App
+Store and Homebrew keep it current: the store updates it in place, and `brew upgrade --cask fuginaut`
+does the same for the Homebrew install. The Mac App Store build runs in Apple's sandbox and opens at
+login only after you turn that on in General.
 
 ## Install
 
