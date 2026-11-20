@@ -65,14 +65,14 @@ final class ClockPanels: NSObject {
         formatter = ClockFormatter(style: store.settings.style)
         text = formatter.string(Date())
         for panel in panels.values {
-            panel.apply(store.settings)
+            panel.apply(store.drawn)
         }
         layout()
     }
 
     // layout places a panel over every display that shows the clock and removes the rest.
     @objc private func layout() {
-        let settings = store.settings
+        let settings = store.drawn
         var seen = Set<CGDirectDisplayID>()
         for display in settings.clockEnabled ? Display.shown(settings) : [] {
             seen.insert(display.id)
@@ -88,7 +88,7 @@ final class ClockPanels: NSObject {
     // makePanel builds and records a styled panel for a display.
     private func makePanel(_ id: CGDirectDisplayID) -> ClockPanel {
         let panel = ClockPanel(onClick: openSettings)
-        panel.apply(store.settings)
+        panel.apply(store.drawn)
         panels[id] = panel
         return panel
     }
