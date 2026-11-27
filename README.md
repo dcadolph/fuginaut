@@ -14,7 +14,7 @@
 
 <p align="center"><strong>A second clock at the center of the menu bar.</strong></p>
 
-https://github.com/user-attachments/assets/b9d006a3-d3e7-4420-8428-9e54591b704d
+https://github.com/user-attachments/assets/c9b3788a-6627-4121-ad48-cf8b5c78cf9b
 
 On a wide monitor, Apple's clock sits in the far right corner, a long way from where you are
 looking. Fuginaut puts a second clock at the center of the menu bar on every display, where a
