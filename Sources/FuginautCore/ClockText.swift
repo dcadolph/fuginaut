@@ -99,9 +99,10 @@ public enum Separator: String, Codable, CaseIterable, Sendable {
     }
 
     // atPattern returns the text a language puts between a long date and its time, so German reads "um" and
-    // French reads "à". A language that joins them with no word, such as Japanese, gets that joining text.
+    // French reads "à". A language that joins them with no word, such as Japanese, gets that joining text, and
+    // a language whose join cannot be read gets two spaces rather than the English word.
     static func atPattern(locale: Locale) -> String {
-        let english = " 'at' "
+        let fallback = locale.language.languageCode == .english ? " 'at' " : "  "
         let f = DateFormatter()
         f.locale = locale
         f.dateStyle = .long
@@ -113,18 +114,18 @@ public enum Separator: String, Codable, CaseIterable, Sendable {
         f.timeStyle = .short
         let time = f.dateFormat ?? ""
         guard !date.isEmpty, !time.isEmpty, both.count > date.count + time.count else {
-            return english
+            return fallback
         }
         if both.hasPrefix(date), both.hasSuffix(time) {
             return String(both.dropFirst(date.count).dropLast(time.count))
         }
         guard let dateRange = both.range(of: date) else {
-            return english
+            return fallback
         }
         var rest = both
         rest.removeSubrange(dateRange)
         guard let timeRange = rest.range(of: time) else {
-            return english
+            return fallback
         }
         rest.removeSubrange(timeRange)
         let word = rest.trimmingCharacters(in: .whitespaces)
