@@ -199,6 +199,18 @@ public struct ClockStyle: Codable, Equatable, Sendable {
     // init builds the default style.
     public init() {}
 
+    // fitting returns the default style with the hours and the order of day and month that the locale uses,
+    // so a new clock reads 15:07 and 4 Nov where people write them that way.
+    public static func fitting(_ locale: Locale) -> ClockStyle {
+        var style = ClockStyle()
+        style.use24Hour = locale.hourCycle == .zeroToTwentyThree || locale.hourCycle == .oneToTwentyFour
+        let order = DateFormatter.dateFormat(fromTemplate: "MMMd", options: 0, locale: locale) ?? ""
+        if let day = order.firstIndex(of: "d"), let month = order.firstIndex(of: "M"), day < month {
+            style.dateStyle = .dayFirst
+        }
+        return style
+    }
+
     // init decodes a style and fills keys it lacks with defaults, so saved settings survive new fields.
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -353,11 +365,18 @@ public struct ClockStyle: Codable, Equatable, Sendable {
 
     // dayOfYearPatterns write "Day 308" in each offered language, by language code.
     private static let dayOfYearPatterns = [
-        "ar": "'اليوم' D", "bn": "'দিন' D", "de": "'Tag' D", "el": "'ημέρα' D", "en": "'Day' D",
-        "es": "'día' D", "fa": "'روز' D", "fr": "'jour' D", "he": "'יום' D", "hi": "'दिन' D",
-        "id": "'hari ke-'D", "it": "'giorno' D", "ja": "D'日目'", "ko": "D'일째'", "nl": "'dag' D",
-        "pl": "'dzień' D", "pt": "'dia' D", "ru": "'день' D", "sv": "'dag' D", "th": "'วันที่' D",
-        "tr": "D'. gün'", "uk": "'день' D", "ur": "'دن' D", "vi": "'ngày thứ' D", "zh": "'第'D'天'",
+        "af": "'dag' D", "am": "'ቀን' D", "ar": "'اليوم' D", "az": "'gün' D", "bg": "'ден' D", "bn": "'দিন' D",
+        "bo": "'ཉིན་' D", "ca": "'dia' D", "cs": "D'. den'", "da": "'dag' D", "de": "'Tag' D", "el": "'ημέρα' D",
+        "en": "'Day' D", "es": "'día' D", "fa": "'روز' D", "fi": "D'. päivä'", "fil": "'araw' D", "fr": "'jour' D",
+        "gu": "'દિવસ' D", "ha": "'kwana' D", "he": "'יום' D", "hi": "'दिन' D", "hr": "D'. dan'", "hu": "D'. nap'",
+        "hy": "'օր' D", "id": "'hari ke-'D", "ig": "'ụbọchị' D", "it": "'giorno' D", "ja": "D'日目'", "jv": "'dina' D",
+        "ka": "'დღე' D", "kk": "D'-күн'", "km": "'ថ្ងៃទី' D", "kn": "'ದಿನ' D", "ko": "D'일째'", "lo": "'ວັນທີ' D",
+        "ml": "'ദിവസം' D", "mn": "'өдөр' D", "mr": "'दिवस' D", "ms": "'hari ke-'D", "my": "D' ရက်မြောက်နေ့'",
+        "nb": "'dag' D", "ne": "'दिन' D", "nl": "'dag' D", "om": "'guyyaa' D", "or": "'ଦିନ' D", "pa": "'ਦਿਨ' D",
+        "pl": "'dzień' D", "ps": "'ورځ' D", "pt": "'dia' D", "ro": "'ziua' D", "ru": "'день' D", "si": "'දිනය' D",
+        "sk": "D'. deň'", "so": "'maalinta' D", "sr": "D'. дан'", "sv": "'dag' D", "sw": "'siku ya' D",
+        "ta": "'நாள்' D", "te": "'రోజు' D", "th": "'วันที่' D", "tr": "D'. gün'", "uk": "'день' D", "ur": "'دن' D",
+        "uz": "D'-kun'", "vi": "'ngày thứ' D", "yo": "'ọjọ́' D", "zh": "'第'D'天'", "zu": "'usuku' D",
     ]
 
     // dayOfYearPattern returns the day of year pattern for the locale's language, or the English one for a
@@ -413,10 +432,14 @@ public final class ClockFormatter {
     }
 
     // fittingYear rewrites a four-digit year for calendars that do not count years that way, so the Japanese
-    // calendar reads "Reiwa 8" rather than "0008" and the Chinese calendar names its year in the cycle.
+    // calendar reads "Reiwa 8" rather than "0008", the Minguo calendar reads "Minguo 115" rather than "0115",
+    // and the Chinese, Korean, and Vietnamese calendars name their year in the cycle.
     private static func fittingYear(_ pattern: String, to calendar: Calendar.Identifier) -> String {
-        switch calendar {
-        case .japanese: pattern.replacingOccurrences(of: "yyyy", with: "G y")
+        if #available(macOS 26, *), calendar == .dangi || calendar == .vietnamese {
+            return pattern.replacingOccurrences(of: "yyyy", with: "U")
+        }
+        return switch calendar {
+        case .japanese, .republicOfChina: pattern.replacingOccurrences(of: "yyyy", with: "G y")
         case .chinese: pattern.replacingOccurrences(of: "yyyy", with: "U")
         default: pattern
         }

@@ -66,7 +66,7 @@ final class SettingsStore {
         {
             settings = saved
         } else {
-            settings = Settings()
+            settings = Settings.fitting(.current)
         }
         #if !FUGINAUT_STORE
             theme = ThemeMessage(UserDefaults.standard.string(forKey: Self.themeKey) ?? "").updating(nil)
@@ -86,7 +86,7 @@ final class SettingsStore {
 
     // reset restores the defaults.
     func reset() {
-        settings = Settings()
+        settings = Settings.fitting(.current)
     }
 
     // save writes the settings to user defaults.

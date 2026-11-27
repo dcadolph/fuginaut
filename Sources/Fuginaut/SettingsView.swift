@@ -451,7 +451,7 @@ struct SettingsView: View {
                     }
                 }
                 .labelsHidden()
-                .frame(width: 240, alignment: .trailing)
+                .frame(width: 280, alignment: .trailing)
             }
             RowDivider()
             Row("Numerals", detail: "Writes the digits.") {
@@ -461,17 +461,17 @@ struct SettingsView: View {
                     }
                 }
                 .labelsHidden()
-                .frame(width: 240, alignment: .trailing)
+                .frame(width: 280, alignment: .trailing)
             }
             RowDivider()
             Row("Calendar", detail: "Counts the date. ISO styles stay Gregorian.") {
                 Picker("Calendar", selection: $store.settings.style.calendar) {
-                    ForEach(ClockCalendar.allCases, id: \.self) { calendar in
+                    ForEach(ClockCalendar.offered, id: \.self) { calendar in
                         Text(Self.calendarTitle(calendar, in: worldStyle)).tag(calendar)
                     }
                 }
                 .labelsHidden()
-                .frame(width: 240, alignment: .trailing)
+                .frame(width: 280, alignment: .trailing)
             }
         }
     }
