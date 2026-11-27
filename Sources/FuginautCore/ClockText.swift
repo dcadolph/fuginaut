@@ -99,10 +99,23 @@ public enum Separator: String, Codable, CaseIterable, Sendable {
     }
 
     // atPattern returns the text a language puts between a long date and its time, so German reads "um" and
-    // French reads "à". A language that joins them with no word, such as Japanese, gets that joining text, and
-    // a language whose join cannot be read gets two spaces rather than the English word.
+    // French reads "à". A language that joins them with no word, such as Japanese, gets that joining text. A
+    // language whose join cannot be read, or whose data falls back to English on an older macOS, gets two
+    // spaces rather than the English word.
     static func atPattern(locale: Locale) -> String {
-        let fallback = locale.language.languageCode == .english ? " 'at' " : "  "
+        let english = " 'at' "
+        if locale.language.languageCode == .english {
+            return joinPattern(locale: locale) ?? english
+        }
+        guard let join = joinPattern(locale: locale), join != english else {
+            return "  "
+        }
+        return join
+    }
+
+    // joinPattern reads the text between a long date and its time from the locale's date and time format, or
+    // returns nil when the format does not hold them apart.
+    private static func joinPattern(locale: Locale) -> String? {
         let f = DateFormatter()
         f.locale = locale
         f.dateStyle = .long
@@ -114,18 +127,18 @@ public enum Separator: String, Codable, CaseIterable, Sendable {
         f.timeStyle = .short
         let time = f.dateFormat ?? ""
         guard !date.isEmpty, !time.isEmpty, both.count > date.count + time.count else {
-            return fallback
+            return nil
         }
         if both.hasPrefix(date), both.hasSuffix(time) {
             return String(both.dropFirst(date.count).dropLast(time.count))
         }
         guard let dateRange = both.range(of: date) else {
-            return fallback
+            return nil
         }
         var rest = both
         rest.removeSubrange(dateRange)
         guard let timeRange = rest.range(of: time) else {
-            return fallback
+            return nil
         }
         rest.removeSubrange(timeRange)
         let word = rest.trimmingCharacters(in: .whitespaces)
