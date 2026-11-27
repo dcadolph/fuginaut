@@ -155,6 +155,13 @@ public struct Settings: Codable, Equatable, Sendable {
     // init builds the default settings.
     public init() {}
 
+    // fitting returns the default settings with a clock written the way the locale writes time and dates.
+    public static func fitting(_ locale: Locale) -> Settings {
+        var settings = Settings()
+        settings.style = .fitting(locale)
+        return settings
+    }
+
     // init decodes settings, fills keys they lack with defaults, and clamps numbers to their ranges.
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)

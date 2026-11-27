@@ -281,6 +281,37 @@ let worldCases: [WorldCase] = [
             dateOnly(&$0, .dayOfYear)
             $0.language = "zh-Hans"
         }, wantText: "第308天"),
+    WorldCase(  // Test 35: The Minguo year is written with its era, not padded.
+        name: "minguo",
+        style: {
+            dateOnly(&$0)
+            $0.calendar = .minguo
+        }, wantText: "Nov 4, Minguo 115"),
+    WorldCase(  // Test 36: Taiwan writes the Minguo date in its own order.
+        name: "minguo native",
+        style: {
+            dateOnly(&$0)
+            $0.calendar = .minguo
+            $0.language = "zh-Hant"
+        }, wantText: "民國 115年11月4日"),
+    WorldCase(  // Test 37: Odia digits.
+        name: "odia",
+        style: {
+            timeOnly(&$0)
+            $0.numerals = .odia
+        }, wantText: "୯:୦୭"),
+    WorldCase(  // Test 38: Day of year in Hungarian uses an ordinal number.
+        name: "day of year hungarian",
+        style: {
+            dateOnly(&$0, .dayOfYear)
+            $0.language = "hu"
+        }, wantText: "308. nap"),
+    WorldCase(  // Test 39: Day of year in Swahili.
+        name: "day of year swahili",
+        style: {
+            dateOnly(&$0, .dayOfYear)
+            $0.language = "sw"
+        }, wantText: "siku ya 308"),
 ]
 
 // testNoEnglishWordsInOtherLanguages checks that no offered language other than English writes "at" or "Day".
@@ -319,7 +350,7 @@ func testEveryNumeralsWritesEveryDigit(numerals: Numerals) {
 }
 
 // testEveryCalendarResolves checks that each calendar other than automatic really counts in that calendar.
-@Test(arguments: ClockCalendar.allCases)
+@Test(arguments: ClockCalendar.offered)
 func testEveryCalendarResolves(calendar: ClockCalendar) {
     var style = ClockStyle()
     style.calendar = calendar
@@ -351,7 +382,43 @@ func testCustomPatternTakesWorldChoices() {
 @Test
 func testLanguagesAreKnown() {
     #expect(Set(ClockLanguage.all.map(\.title)).count == ClockLanguage.all.count)
-    #expect(ClockLanguage.all.first { $0.id == "es" }?.title == "Spanish  ·  español")
+    #expect(ClockLanguage.all.first { $0.id == "es-ES" }?.title == "Spanish (Spain)  ·  español")
+    #expect(
+        ClockLanguage.all.map(\.title)
+            == ClockLanguage.all.map(\.title).sorted { $0.localizedStandardCompare($1) == .orderedAscending })
+    for language in ClockLanguage.all {
+        #expect(Locale(identifier: language.id).localizedString(forIdentifier: language.id) != nil, "\(language.id)")
+    }
+}
+
+// testNewerCalendarsOnlyWhereKnown checks that the calendars from macOS 26 are offered only where the Mac has
+// them, and that the Korean year is named in the cycle.
+@Test
+func testNewerCalendarsOnlyWhereKnown() {
+    if #available(macOS 26, *) {
+        #expect(ClockCalendar.offered.contains(.korean))
+        let got = worldText {
+            dateOnly(&$0)
+            $0.calendar = .korean
+        }
+        #expect(!got.contains("00"), "\(got)")
+    } else {
+        #expect(!ClockCalendar.offered.contains(.korean))
+        #expect(ClockCalendar.korean.identifier == nil)
+    }
+}
+
+// testFittingDefaults checks that a new clock takes the locale's hours and order of day and month.
+@Test
+func testFittingDefaults() {
+    let us = ClockStyle.fitting(Locale(identifier: "en_US"))
+    #expect(!us.use24Hour)
+    #expect(us.dateStyle == .short)
+    let uk = ClockStyle.fitting(Locale(identifier: "en_GB"))
+    #expect(uk.use24Hour)
+    #expect(uk.dateStyle == .dayFirst)
+    #expect(ClockStyle.fitting(Locale(identifier: "de_DE")).use24Hour)
+    #expect(!ClockStyle.fitting(Locale(identifier: "hi_IN")).use24Hour)
 }
 
 // ZoneCase is one zone search expectation.
@@ -378,7 +445,24 @@ let zoneCases: [ZoneCase] = [
     ZoneCase(query: "central standard", wantIDs: ["America/Chicago"]),  // Test 7: Zone name.
     ZoneCase(query: "utc+9", wantIDs: ["Asia/Tokyo"]),  // Test 8: Offset.
     ZoneCase(query: "utc+5:30", wantIDs: ["Asia/Calcutta", "Asia/Kolkata"]),  // Test 9: Offset with minutes.
+    ZoneCase(query: "kyiv", wantIDs: ["Europe/Kyiv"]),  // Test 11: Current name.
+    ZoneCase(query: "kiev", wantIDs: ["Europe/Kyiv"]),  // Test 12: Old spelling finds the current zone.
+    ZoneCase(query: "zaporizhzhia", wantIDs: ["Europe/Kyiv"]),  // Test 13: Merged city.
+    ZoneCase(query: "yangon", wantIDs: ["Asia/Yangon"]),  // Test 14: Renamed city.
 ]
+
+// testRenamedZones checks that the list shows each place by its current name only.
+@Test
+func testRenamedZones() {
+    let entries = ZoneCatalog.entries(at: worldDate)
+    let ids = Set(entries.map(\.id))
+    for old in ["Europe/Kiev", "Asia/Rangoon", "Asia/Katmandu", "America/Godthab", "Pacific/Truk"] {
+        #expect(!ids.contains(old), "\(old)")
+    }
+    #expect(!entries.contains { ["Kiev", "Calcutta", "Rangoon", "Katmandu", "Godthab"].contains($0.city) })
+    #expect(ZoneCatalog.entry("Europe/Kiev", at: worldDate)?.city == "Kyiv")
+    #expect(ZoneCatalog.entry("Asia/Calcutta", at: worldDate)?.city == "Kolkata")
+}
 
 // testZoneSearch checks that a search finds the zone.
 @Test(arguments: zoneCases)
