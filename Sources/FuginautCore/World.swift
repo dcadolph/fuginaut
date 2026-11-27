@@ -190,25 +190,19 @@ public enum ClockCalendar: String, Codable, CaseIterable, Sendable {
         }
     }
 
-    // newer returns the identifier for a calendar that arrived in macOS 26, or nil for any other.
+    // newer returns the identifier for a calendar that arrived in macOS 26, or nil for any other or on a Mac
+    // without it. It looks the calendar up by its Unicode name, so the app builds with any SDK.
     private static func newer(_ calendar: ClockCalendar) -> Calendar.Identifier? {
-        guard #available(macOS 26, *) else {
+        let names: [ClockCalendar: String] = [
+            .vikram: "vikram", .bangla: "bangla", .gujarati: "gujarati", .kannada: "kannada", .malayalam: "malayalam",
+            .marathi: "marathi", .odia: "odia", .tamil: "tamil", .telugu: "telugu", .korean: "dangi",
+            .vietnamese: "vietnamese",
+        ]
+        guard let name = names[calendar] else {
             return nil
         }
-        return switch calendar {
-        case .vikram: .vikram
-        case .bangla: .bangla
-        case .gujarati: .gujarati
-        case .kannada: .kannada
-        case .malayalam: .malayalam
-        case .marathi: .marathi
-        case .odia: .odia
-        case .tamil: .tamil
-        case .telugu: .telugu
-        case .korean: .dangi
-        case .vietnamese: .vietnamese
-        default: nil
-        }
+        let identifier = Locale(identifier: "en_US@calendar=" + name).calendar.identifier
+        return identifier == .gregorian ? nil : identifier
     }
 
     // title names the calendar in menus.

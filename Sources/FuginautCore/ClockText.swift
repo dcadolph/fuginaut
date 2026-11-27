@@ -435,7 +435,7 @@ public final class ClockFormatter {
     // calendar reads "Reiwa 8" rather than "0008", the Minguo calendar reads "Minguo 115" rather than "0115",
     // and the Chinese, Korean, and Vietnamese calendars name their year in the cycle.
     private static func fittingYear(_ pattern: String, to calendar: Calendar.Identifier) -> String {
-        if #available(macOS 26, *), calendar == .dangi || calendar == .vietnamese {
+        if calendar == ClockCalendar.korean.identifier || calendar == ClockCalendar.vietnamese.identifier {
             return pattern.replacingOccurrences(of: "yyyy", with: "U")
         }
         return switch calendar {
