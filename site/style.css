@@ -204,45 +204,19 @@ section h2 { font-size: clamp(32px, 4.4vw, 52px); font-weight: 720; text-wrap: b
 .checks { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; }
 .checks label { flex-direction: row; align-items: center; color: var(--text); font-size: 15px; }
 
-/* Feature sections */
-.split {
-  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 540px);
-  gap: clamp(48px, 7vw, 104px); align-items: center;
+/* Feature grid */
+.grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(16px, 2.4vw, 28px); margin-top: clamp(40px, 5vw, 64px);
 }
-.split.flip { grid-template-columns: minmax(0, 540px) minmax(0, 1fr); }
-.split.flip .copy-col { order: 2; }
+.card { padding: 28px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); }
+.card .kicker { margin-bottom: 10px; }
+.card h3 { margin: 0; font: 680 22px/1.25 var(--display); letter-spacing: -0.01em; text-wrap: balance; }
+.card p:last-child { margin: 12px 0 0; color: var(--muted); font-size: 16px; line-height: 1.5; text-wrap: pretty; }
 .kicker {
   margin: 0 0 14px; color: var(--link); font-size: 13px; font-weight: 650;
   letter-spacing: 0.1em; text-transform: uppercase;
 }
-.say { margin: 20px 0 0; font-size: 19px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
-.facts { margin: 30px 0 0; border-top: 1px solid var(--line); }
-.facts div {
-  display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 16px;
-  padding: 13px 0; border-bottom: 1px solid var(--line);
-}
-.facts dt { font-size: 15px; font-weight: 620; }
-.facts dd { margin: 0; font-size: 15px; line-height: 1.5; color: var(--muted); }
-.stats { display: flex; gap: clamp(24px, 3vw, 44px); list-style: none; margin: 26px 0 0; padding: 0; color: var(--muted); font-size: 14px; }
-.stats b {
-  display: block; color: var(--link); font: 720 clamp(40px, 4.4vw, 54px)/1 var(--display);
-  letter-spacing: -0.03em; margin-bottom: 6px;
-}
-.shot {
-  margin: 0; width: 100%; max-width: 540px; justify-self: center; overflow: hidden;
-  border-radius: 14px; border: 1px solid var(--line); background: var(--panel);
-  box-shadow: 0 34px 90px var(--shadow);
-}
-.chrome {
-  position: relative; display: flex; align-items: center; gap: 7px;
-  height: 34px; padding: 0 13px; border-bottom: 1px solid var(--line);
-}
-.chrome i { width: 11px; height: 11px; border-radius: 50%; background: var(--line); }
-.chrome span {
-  position: absolute; left: 0; right: 0; text-align: center;
-  color: var(--muted); font-size: 12.5px; font-weight: 550;
-}
-.shot img { width: 100%; }
 .wall { margin-top: clamp(56px, 7vw, 96px); }
 .wall img { width: 100%; border-radius: 18px; border: 1px solid var(--line); }
 
@@ -252,7 +226,6 @@ section h2 { font-size: clamp(32px, 4.4vw, 52px); font-weight: 720; text-wrap: b
   border-radius: 18px; border: 1px solid #2b2925; background: #000;
 }
 .get { text-align: center; }
-.get img { margin: 0 auto 14px; border-radius: 50%; background: #000; }
 
 /* Footer */
 .foot { border-top: 1px solid var(--line); padding: 48px 0 56px; color: var(--muted); font-size: 15px; text-align: center; }
@@ -306,8 +279,7 @@ kbd { border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; backg
 .lost h1 { font-size: 44px; font-weight: 720; margin-top: 12px; }
 
 @media (max-width: 900px) {
-  .split, .split.flip { grid-template-columns: minmax(0, 1fr); gap: 40px; }
-  .split.flip .copy-col { order: 0; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .docs { grid-template-columns: 1fr; gap: 12px; padding-top: 24px; }
   .docs-side { position: static; max-height: none; }
   .docs-toc { display: flex; flex-wrap: wrap; gap: 2px 4px; }
@@ -332,7 +304,8 @@ kbd { border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; backg
   .bar .right { margin-left: auto; }
   .stage .bar .right { display: none; }
   .play-bar .right { display: none; }
-  .facts div { grid-template-columns: 88px minmax(0, 1fr); gap: 12px; }
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .card { padding: 22px; }
   .docs-main table { font-size: 14.5px; }
   .wall { overflow-x: auto; }
   .wall img { width: 720px; max-width: none; }

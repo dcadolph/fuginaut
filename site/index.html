@@ -61,7 +61,20 @@
   </div>
 </section>
 
-<section class="band lift play" id="try">
+
+<section class="band watch">
+  <div class="w">
+    <div class="head">
+      <h2>See it in 40 seconds.</h2>
+    </div>
+    <video controls preload="none" poster="/assets/poster.jpg" width="1920" height="1080">
+      <source src="/assets/promo.mp4" type="video/mp4">
+      <track kind="captions" src="/assets/promo.vtt" srclang="en" label="English">
+    </video>
+  </div>
+</section>
+
+<section class="band play" id="try">
   <div class="w">
     <div class="head">
       <h2>Try one on.</h2>
@@ -163,165 +176,62 @@
   </div>
 </section>
 
-<section class="band feature">
-  <div class="w split">
-    <div class="copy-col">
-      <p class="kicker">Size and position</p>
-      <h2>Right where you look.</h2>
-      <p class="say">The clock sits at the center of the menu bar on every display.</p>
-      <dl class="facts">
-        <div><dt>Size</dt><dd>Anywhere from 9 to 40 points.</dd></div>
-        <div><dt>Nudge</dt><dd>Up to 600 points either way, if something else already lives there.</dd></div>
-        <div><dt>Notch</dt><dd>The clock slides beside the notch when it fits.</dd></div>
-        <div><dt>Laptops</dt><dd>A laptop's own screen starts with the clock off while an external display is connected. Turn it on from General.</dd></div>
-      </dl>
-    </div>
-    <figure class="shot">
-      <figcaption class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>Fuginaut Settings</span></figcaption>
-      <picture>
-        <source srcset="/assets/settings-size-light.png" media="(prefers-color-scheme: light)">
-        <img src="/assets/settings-size-dark.png" alt="The Size tab, with a slider for the clock's size and a nudge off the center of the bar" width="540" height="363" loading="lazy">
-      </picture>
-    </figure>
-  </div>
-</section>
-
-<section class="band lift feature">
-  <div class="w split flip">
-    <div class="copy-col">
-      <p class="kicker">Text</p>
-      <h2>Any font on your Mac.</h2>
-      <p class="say">Use one of the built-in looks, or any font family you have installed.</p>
-      <dl class="facts">
-        <div><dt>Font</dt><dd>System, Rounded, Mono, Serif, or your own.</dd></div>
-        <div><dt>Weight</dt><dd>Four to choose from.</dd></div>
-        <div><dt>Capitals</dt><dd>As written, ALL CAPS, or lowercase.</dd></div>
-      </dl>
-    </div>
-    <figure class="shot">
-      <figcaption class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>Fuginaut Settings</span></figcaption>
-      <picture>
-        <source srcset="/assets/settings-text-light.png" media="(prefers-color-scheme: light)">
-        <img src="/assets/settings-text-dark.png" alt="The Text tab, with pickers for the font, its weight, and capitals" width="540" height="344" loading="lazy">
-      </picture>
-    </figure>
-  </div>
-</section>
-
-<section class="band feature">
-  <div class="w split">
-    <div class="copy-col">
-      <p class="kicker">Color</p>
-      <h2>Match the bar,<br> or don't.</h2>
-      <p class="say">White on a dark menu bar and black on a light one, until you pick your own.</p>
-      <dl class="facts">
-        <div><dt>Color</dt><dd>24 swatches, a hex value, or the color wheel.</dd></div>
-        <div><dt>Backing</dt><dd>A shadow or a pill keeps the text readable over busy wallpaper.</dd></div>
-        <div><dt>Contrast</dt><dd>The backing picks a contrasting color on its own, or you choose one the same three ways.</dd></div>
-      </dl>
-    </div>
-    <figure class="shot">
-      <figcaption class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>Fuginaut Settings</span></figcaption>
-      <picture>
-        <source srcset="/assets/settings-color-light.png" media="(prefers-color-scheme: light)">
-        <img src="/assets/settings-color-dark.png" alt="The Color tab, with a grid of swatches, a hex field, and the color wheel for the text and its backing" width="540" height="656" loading="lazy">
-      </picture>
-    </figure>
-  </div>
-</section>
-
-<section class="band lift feature">
-  <div class="w split flip">
-    <div class="copy-col">
-      <p class="kicker">Format</p>
-      <h2>Sixteen date styles, or write your own.</h2>
-      <p class="say">Short, long, day first, with the year, numeric, dotted, ISO, ISO week, day of year, and more.</p>
-      <dl class="facts">
-        <div><dt>Layout</dt><dd>Show or hide the weekday, date, and time, put either first, with seven choices for what goes between them.</dd></div>
-        <div><dt>Time</dt><dd>12-hour or 24-hour, with or without seconds, a leading zero, and PM, pm, or neither.</dd></div>
-        <div><dt>Extras</dt><dd>Text or emoji before and after the clock.</dd></div>
-        <div><dt>Custom</dt><dd>A pattern of your own, with ready examples and a menu of pattern letters.</dd></div>
-      </dl>
-    </div>
-    <figure class="shot">
-      <figcaption class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>Fuginaut Settings</span></figcaption>
-      <picture>
-        <source srcset="/assets/settings-format-light.png" media="(prefers-color-scheme: light)">
-        <img src="/assets/settings-format-dark.png" alt="The Format tab, with a date style picker and switches for the weekday, date, time, and order" width="540" height="747" loading="lazy">
-      </picture>
-    </figure>
-  </div>
-  <div class="w wall" tabindex="0" role="region" aria-label="Six clock looks">
-    <img src="/assets/styles-wall.jpg" alt="Six clock looks: amber on a navy pill, mono ISO in 24-hour time, rounded with a rocket emoji, serif spelled out, all caps with seconds, and time only in big bold amber" width="1400" height="634" loading="lazy">
-  </div>
-</section>
-
-<section class="band feature">
-  <div class="w split">
-    <div class="copy-col">
-      <p class="kicker">World</p>
-      <h2>Your language, your numerals, your calendar.</h2>
-      <p class="say">Mix them freely.</p>
-      <ul class="stats">
-        <li><b>73</b>languages</li>
-        <li><b>22</b>sets of numerals</li>
-        <li><b>24</b>calendars</li>
-      </ul>
-      <dl class="facts">
-        <div><dt>Calendars</dt><dd>Gregorian, Islamic, Hebrew, Persian, Chinese, Japanese, Minguo, and more on every Mac. Korean, Vietnamese, Vikram Samvat, and eight Indian regional calendars need macOS 26.</dd></div>
-        <div><dt>Word order</dt><dd>Languages other than English use their own word order when the month is written as a word.</dd></div>
-        <div><dt>Second zone</dt><dd>Search by city, zone name, or UTC offset, with a label of your own beside it.</dd></div>
-      </dl>
-    </div>
-    <figure class="shot">
-      <figcaption class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>Fuginaut Settings</span></figcaption>
-      <picture>
-        <source srcset="/assets/settings-world-light.png" media="(prefers-color-scheme: light)">
-        <img src="/assets/settings-world-dark.png" alt="The World tab, with pickers for language, numerals, and calendar, and a second time zone set to Tokyo" width="540" height="496" loading="lazy">
-      </picture>
-    </figure>
-  </div>
-  <div class="w wall" tabindex="0" role="region" aria-label="One moment written seven ways">
-    <img src="/assets/world-wall.jpg" alt="One moment written seven ways: Arabic with the Islamic calendar, Chinese lunisolar, Hebrew, Hindi with the Indian national calendar, Japanese with the imperial era, Persian with Solar Hijri, and Thai with the Buddhist calendar" width="1400" height="656" loading="lazy">
-  </div>
-</section>
-
-<section class="band lift feature">
-  <div class="w split flip">
-    <div class="copy-col">
-      <p class="kicker">General</p>
-      <h2>It stays out of your way.</h2>
-      <p class="say">Click the eclipse in the menu bar to turn the clock on and off.</p>
-      <dl class="facts">
-        <div><dt>Eclipse</dt><dd>Amber while the clock is on, plain while it's off. Right-click it for the menu.</dd></div>
-        <div><dt>Clicks</dt><dd>Click the clock to open settings, or let clicks pass straight through.</dd></div>
-        <div><dt>Displays</dt><dd>Choose which ones show it, and keep it up in full screen apps.</dd></div>
-        <div><dt>Quiet</dt><dd>Hide the menu bar icon, and open at login if you want to.</dd></div>
-      </dl>
-    </div>
-    <figure class="shot">
-      <figcaption class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>Fuginaut Settings</span></figcaption>
-      <picture>
-        <source srcset="/assets/settings-general-light.png" media="(prefers-color-scheme: light)">
-        <img src="/assets/settings-general-dark.png" alt="The General tab, with switches for each display and for how the clock behaves" width="540" height="522" loading="lazy">
-      </picture>
-    </figure>
-  </div>
-</section>
-
-<section class="band watch">
+<section class="band lift features">
   <div class="w">
     <div class="head">
-      <h2>See it in 40 seconds.</h2>
+      <h2>Make it yours.</h2>
+      <p class="sec-lede">Every change shows live as you make it. <a href="/docs">The docs cover every option.</a></p>
     </div>
-    <video controls preload="none" poster="/assets/poster.jpg" width="1920" height="1080">
-      <source src="/assets/promo.mp4" type="video/mp4">
-      <track kind="captions" src="/assets/promo.vtt" srclang="en" label="English">
-    </video>
+    <div class="grid">
+      <div class="card">
+        <p class="kicker">Size and position</p>
+        <h3>Right where you look.</h3>
+        <p>The center of the menu bar on every display, from 9 to 40 points, with a nudge if something already lives there.</p>
+      </div>
+      <div class="card">
+        <p class="kicker">Text</p>
+        <h3>Any font on your Mac.</h3>
+        <p>System, Rounded, Mono, Serif, or any family you have installed, in four weights.</p>
+      </div>
+      <div class="card">
+        <p class="kicker">Color</p>
+        <h3>Match the bar, or don't.</h3>
+        <p>24 swatches, a hex value, or the color wheel, with a shadow or pill to keep it readable.</p>
+      </div>
+      <div class="card">
+        <p class="kicker">Format</p>
+        <h3>Sixteen date styles, or your own.</h3>
+        <p>Weekday, date, and time in either order, 12 or 24 hour, with text or emoji around the clock.</p>
+      </div>
+      <div class="card">
+        <p class="kicker">World</p>
+        <h3>Your language, numerals, and calendar.</h3>
+        <p>73 languages, 22 sets of numerals, and 24 calendars, mixed freely, plus a second time zone.</p>
+      </div>
+      <div class="card">
+        <p class="kicker">General</p>
+        <h3>It stays out of your way.</h3>
+        <p>Click the eclipse to turn it on or off. Pick which displays show it, even in full screen apps.</p>
+      </div>
+    </div>
   </div>
 </section>
 
-<section class="band lift quiet">
+<section class="band walls">
+  <div class="w">
+    <div class="head">
+      <h2>Six looks. One moment, seven ways.</h2>
+    </div>
+  <div class="wall" tabindex="0" role="region" aria-label="Six clock looks">
+    <img src="/assets/styles-wall.jpg" alt="Six clock looks: amber on a navy pill, mono ISO in 24-hour time, rounded with a rocket emoji, serif spelled out, all caps with seconds, and time only in big bold amber" width="1400" height="634" loading="lazy">
+  </div>
+  <div class="wall" tabindex="0" role="region" aria-label="One moment written seven ways">
+    <img src="/assets/world-wall.jpg" alt="One moment written seven ways: Arabic with the Islamic calendar, Chinese lunisolar, Hebrew, Hindi with the Indian national calendar, Japanese with the imperial era, Persian with Solar Hijri, and Thai with the Buddhist calendar" width="1400" height="656" loading="lazy">
+  </div>
+  </div>
+</section>
+
+<section class="band quiet">
   <div class="w">
     <div class="head">
       <h2>No permissions. Nothing collected.</h2>
@@ -330,9 +240,8 @@
   </div>
 </section>
 
-<section class="band get" id="get">
+<section class="band lift get" id="get">
   <div class="w">
-    <img src="/assets/astronaut.png" alt="" width="180" height="180" loading="lazy">
     <h2>Free, and open source.</h2>
     <div class="cta">
       <span class="btn soon" aria-disabled="true">Coming soon to the Mac App Store</span>
